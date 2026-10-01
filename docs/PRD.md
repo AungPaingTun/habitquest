@@ -44,14 +44,15 @@ These rules are the source of truth. Code and tests must follow them.
 | Date range | Start date (defaults to today) and optional end date (≥ start date). Example: "Run 2× per week during October" |
 | Editing | All fields can be edited. **Changing points only affects future check-ins**; points already earned never change. |
 | Archive | Archiving hides a habit but keeps its history. Archived habits can be restored. There is no hard delete in v1. |
+| Completed | Once the end date has passed, the habit shows as **completed** (separate from archived) with its final stats. No more check-ins. |
 | Privacy | A user can only see and edit their own habits. |
 
 ### 5.2 Check-ins
 | Rule | Detail |
 |---|---|
 | When | **Today only**, in the user's own time zone. A missed day is gone and can't be logged later. |
-| How often | At most **once per day** per habit. Weekly/monthly habits can't be checked in beyond their target for the period. |
-| Undo | A check-in can be undone **on the same day only**. Its points (and any streak bonus) are reversed. |
+| How often | At most **once per day** per habit, for every habit type. **Progress counts days, not amount**: reading 40 pages instead of 20 still counts once. Weekly/monthly habits can't be checked in beyond their target for the period. |
+| Undo | A check-in can be undone **on the same day only**. Its points (and any streak bonus) are reversed, as if never earned. **Blocked if those points were already spent**, i.e. the balance would go negative ("You've already spent these points"). |
 | Active window | A habit can only be checked in between its start and end dates, and only if it isn't archived. |
 | Periods | Weeks run **Monday–Sunday** (ISO). Months are calendar months. Both use the user's time zone. |
 
@@ -61,7 +62,8 @@ These rules are the source of truth. Code and tests must follow them.
 | Earning | Each check-in earns the habit's points **as they were at check-in time** (stored with the check-in). |
 | Ledger | Every change in points is a row in a ledger: earn, streak bonus, redeem, undo. The balance is the sum of the ledger. |
 | Balance | Points available to spend. Never negative. |
-| Lifetime XP | Total points ever earned. **Never goes down**, even when points are spent. Determines the user's **level**. |
+| Lifetime XP | Total points ever earned. **Never goes down** when points are spent (only a same-day undo removes them). Determines the user's **level**. |
+| Levels | Level *n* needs **50 × n²** lifetime XP, so each level takes longer: L1 = 50 · L2 = 200 · L3 = 450 · L5 = 1,250 · L10 = 5,000. Below 50 XP the user is Level 0. |
 
 ### 5.4 Streaks
 Streak bonuses are **flat extra points, not multipliers**. They are easy to understand and can't grow out of control.
@@ -79,6 +81,7 @@ Streak bonuses are **flat extra points, not multipliers**. They are easy to unde
 | Rule | Detail |
 |---|---|
 | Fields | Name (required), icon (optional), cost in points (≥1) |
+| Cost is locked | The cost **can never be changed** once the prize is created, so the goal doesn't move mid-challenge. To change it, archive the prize and create a new one. Name and icon can still be edited. |
 | Redeem | Allowed only if balance ≥ cost. The cost is deducted from the balance (XP is not affected). |
 | Repeatable | Prizes are never used up and can be redeemed again. Each prize shows its **redeem count** (e.g. "Hotpot ×2"). |
 | Safety | Redeeming twice at the same moment (a double-click) can't spend the points twice. |
@@ -120,11 +123,13 @@ Streak bonuses are **flat extra points, not multipliers**. They are easy to unde
 - At least **one prize redeemed** in the first month
 - The analytics show a trend I didn't notice on my own
 
-## 9. Open questions
-| # | Question | Proposed answer |
-|---|---|---|
-| 1 | What XP is needed for each level? | Level *n* needs 50 × n² XP in total (L1 = 50, L2 = 200, L3 = 450 …), so levels get slower to reach. Decide in Sprint 3. |
-| 2 | Undo after spending: points earned today were already used to redeem a prize, so undoing would make the balance negative. | Block the undo and show "You've already spent these points." |
-| 3 | What happens when a habit's end date passes? | Show it as **completed** (separate from archived), with its final stats. |
-| 4 | Can a prize's cost be edited? | Yes; past redemptions keep the cost they had at the time. |
-| 5 | Should weekly habits allow more than one check-in per day? | No; one per day keeps it simple. |
+## 9. Decisions log
+Questions that came up while planning, and what was decided (2026-10-01).
+
+| # | Question | Decision | Why |
+|---|---|---|---|
+| 1 | What XP is needed for each level? | Level *n* needs 50 × n² XP (L1 = 50, L2 = 200, L3 = 450 …) | Early levels come fast to build motivation; later levels take months, so they mean something. |
+| 2 | Points earned today were already spent on a prize. Can the check-in still be undone? | No. Undo is blocked. | The balance must never go negative. |
+| 3 | What happens when a habit's end date passes? | It shows as **completed**, with its final stats. | A finished challenge is an achievement, not something to hide like an archived habit. |
+| 4 | Can a prize's cost be edited? | No. It's locked once created; archive the prize and create a new one instead. | A goal shouldn't move during the challenge. |
+| 5 | Can a habit be checked in more than once a day (e.g. 40 pages instead of 20)? | No. One check-in per day for every habit type. | Progress is measured in days of consistency, not in the amount done in one day. |
