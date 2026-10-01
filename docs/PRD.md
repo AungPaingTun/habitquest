@@ -91,7 +91,7 @@ Streak bonuses are **flat extra points, not multipliers**. They are easy to unde
 |---|---|---|
 | Accounts | Sign up, log in, log out (email + password, JWT) | ✅ Done |
 | Habits | Create, list, edit, archive/restore (API) | ✅ Done |
-| Habits | Habits page in the browser | ⏳ Sprint 1 |
+| Habits | Habits page in the browser | ✅ Done |
 | Check-ins | Check off today, same-day undo, points ledger | Sprint 2 |
 | Streaks | Current/best streak, flat bonuses | Sprint 2 |
 | Prizes | Create prizes, redeem, redeem count | Sprint 2 |

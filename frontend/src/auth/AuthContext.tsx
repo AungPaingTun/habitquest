@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { api, getToken, setToken } from '../lib/api'
 
@@ -22,6 +23,7 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient()
   const [user, setUser] = useState<User | null>(null)
   // True while we check a saved token on page load, so protected pages don't flash the login screen.
   const [loading, setLoading] = useState(() => getToken() !== null)
@@ -35,9 +37,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const handleAuth = useCallback((response: AuthResponse) => {
+    queryClient.clear() // never show data cached for a previous user
     setToken(response.token)
     setUser(response.user)
-  }, [])
+  }, [queryClient])
 
   const login = useCallback(async (email: string, password: string) => {
     handleAuth(await api<AuthResponse>('/auth/login', { method: 'POST', body: { email, password } }))
@@ -55,7 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setToken(null)
     setUser(null)
-  }, [])
+    queryClient.clear()
+  }, [queryClient])
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout }}>
