@@ -42,7 +42,7 @@ These rules are the source of truth. Code and tests must follow them.
 | Fields | Name (required, ≤100 chars), icon (optional emoji), points per check-in (1–100) |
 | Frequency | **Daily** (default), **N times per week** (1–7), or **N times per month** (1–31) |
 | Date range | Start date (defaults to today) and optional end date (≥ start date). Example: "Run 2× per week during October" |
-| Editing | All fields can be edited. **Changing points only affects future check-ins**; points already earned never change. |
+| Editing | Name, icon, points and dates can always be edited. **Changing points only affects future check-ins**; points already earned never change. **Frequency and target are locked after the first check-in**, so a streak is always measured against the rules it started with; to change them, archive the habit and create a new one. |
 | Archive | Archiving hides a habit but keeps its history. Archived habits can be restored. There is no hard delete in v1. |
 | Completed | Once the end date has passed, the habit shows as **completed** (separate from archived) with its final stats. No more check-ins. |
 | Privacy | A user can only see and edit their own habits. |
@@ -124,7 +124,7 @@ Streak bonuses are **flat extra points, not multipliers**. They are easy to unde
 - The analytics show a trend I didn't notice on my own
 
 ## 9. Decisions log
-Questions that came up while planning, and what was decided (2026-10-01).
+Questions that came up while planning, and what was decided (2026-10-01; #6 on 2026-10-02).
 
 | # | Question | Decision | Why |
 |---|---|---|---|
@@ -133,3 +133,4 @@ Questions that came up while planning, and what was decided (2026-10-01).
 | 3 | What happens when a habit's end date passes? | It shows as **completed**, with its final stats. | A finished challenge is an achievement, not something to hide like an archived habit. |
 | 4 | Can a prize's cost be edited? | No. It's locked once created; archive the prize and create a new one instead. | A goal shouldn't move during the challenge. |
 | 5 | Can a habit be checked in more than once a day (e.g. 40 pages instead of 20)? | No. One check-in per day for every habit type. | Progress is measured in days of consistency, not in the amount done in one day. |
+| 6 | Can a habit's frequency or target be changed after check-ins exist? | No. They're locked after the first check-in (name, icon, points and dates stay editable). | Otherwise old check-ins get recounted under new rules (e.g. daily → weekly turns 30 days into "met weeks" and pays a bonus at once). Same idea as the locked prize cost: no moving goalposts. |

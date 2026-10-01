@@ -195,6 +195,48 @@ class HabitServiceTest {
     }
 
     @Test
+    void update_afterFirstCheckInChangingFrequency_throwsConflictAndKeepsRules() {
+        Habit habit = existingHabit(LocalDate.of(2026, 9, 1)); // DAILY, target 1
+        when(habits.findByIdAndUserId(HABIT_ID, USER_ID)).thenReturn(Optional.of(habit));
+        when(habits.hasCheckIns(HABIT_ID)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.update(USER_ID, HABIT_ID,
+                new HabitRequest("Old", null, 5, Frequency.WEEKLY, 1, null, null)))
+                .isInstanceOfSatisfying(ApiException.class,
+                        e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.CONFLICT));
+        assertThat(habit.getFrequency()).isEqualTo(Frequency.DAILY);
+    }
+
+    @Test
+    void update_afterFirstCheckInChangingTarget_throwsConflict() {
+        Habit habit = new Habit(USER_ID);
+        habit.update("Run", null, 5, Frequency.WEEKLY, 2, LocalDate.of(2026, 9, 1), null);
+        when(habits.findByIdAndUserId(HABIT_ID, USER_ID)).thenReturn(Optional.of(habit));
+        when(habits.hasCheckIns(HABIT_ID)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.update(USER_ID, HABIT_ID,
+                new HabitRequest("Run", null, 5, Frequency.WEEKLY, 3, null, null)))
+                .isInstanceOfSatisfying(ApiException.class,
+                        e -> assertThat(e.getStatus()).isEqualTo(HttpStatus.CONFLICT));
+        assertThat(habit.getTargetCount()).isEqualTo(2);
+    }
+
+    @Test
+    void update_afterFirstCheckInKeepingRules_canStillChangeNameIconPointsAndDates() {
+        Habit habit = existingHabit(LocalDate.of(2026, 9, 1)); // DAILY, target 1
+        when(habits.findByIdAndUserId(HABIT_ID, USER_ID)).thenReturn(Optional.of(habit));
+        when(habits.hasCheckIns(HABIT_ID)).thenReturn(true);
+
+        HabitResponse response = service.update(USER_ID, HABIT_ID, new HabitRequest(
+                "New name", "🥗", 8, Frequency.DAILY, 1, null, LocalDate.of(2026, 12, 31)));
+
+        assertThat(response.name()).isEqualTo("New name");
+        assertThat(response.points()).isEqualTo(8);
+        assertThat(response.endDate()).isEqualTo(LocalDate.of(2026, 12, 31));
+        assertThat(response.rulesLocked()).isTrue();
+    }
+
+    @Test
     void update_whenHabitNotOwned_throwsNotFound() {
         when(habits.findByIdAndUserId(HABIT_ID, USER_ID)).thenReturn(Optional.empty());
 

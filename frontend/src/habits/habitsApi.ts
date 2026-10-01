@@ -14,6 +14,8 @@ export type Habit = {
   startDate: string // "YYYY-MM-DD"
   endDate: string | null
   archived: boolean
+  /** True after the first check-in: frequency and target can't change anymore. */
+  rulesLocked: boolean
   createdAt: string
 }
 

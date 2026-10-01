@@ -35,6 +35,7 @@ export function HabitDialog({ habit, onClose }: Props) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const saving = createHabit.isPending || updateHabit.isPending
+  const rulesLocked = habit?.rulesLocked ?? false
   const maxTarget = FREQUENCIES.find((f) => f.value === frequency)!.max
 
   useEffect(() => {
@@ -140,15 +141,16 @@ export function HabitDialog({ habit, onClose }: Props) {
 
         <fieldset>
           <legend className="text-sm text-slate-300 mb-2">How often</legend>
-          <div className="grid grid-cols-3 gap-2" role="radiogroup">
+          <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-disabled={rulesLocked}>
             {FREQUENCIES.map((f) => (
               <button
                 key={f.value}
                 type="button"
                 role="radio"
                 aria-checked={frequency === f.value}
+                disabled={rulesLocked}
                 onClick={() => chooseFrequency(f.value)}
-                className={`rounded-lg py-2 text-sm border transition-colors ${
+                className={`rounded-lg py-2 text-sm border transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
                   frequency === f.value
                     ? 'border-emerald-400 bg-emerald-500/15 text-emerald-300'
                     : 'border-slate-700 text-slate-300 hover:border-slate-500'
@@ -167,11 +169,19 @@ export function HabitDialog({ habit, onClose }: Props) {
                 min={1}
                 max={maxTarget}
                 value={targetCount}
+                disabled={rulesLocked}
                 onChange={(e) => setTargetCount(e.target.value)}
-                className={`${inputClass(fieldErrors.targetCount, 'w-20')} shrink-0`}
+                className={`${inputClass(fieldErrors.targetCount, 'w-20')} shrink-0 disabled:opacity-60`}
               />
               <span>times per {frequency === 'WEEKLY' ? 'week' : 'month'} (max {maxTarget})</span>
             </label>
+          )}
+
+          {rulesLocked && (
+            <p className="text-xs text-slate-400 mt-2">
+              🔒 Locked after the first check-in, so your streak keeps the rules you started with.
+              To change it, archive this habit and create a new one.
+            </p>
           )}
         </fieldset>
 

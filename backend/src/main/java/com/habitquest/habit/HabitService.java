@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class HabitService {
@@ -28,32 +30,41 @@ public class HabitService {
 
     @Transactional(readOnly = true)
     public List<HabitResponse> list(Long userId, boolean archived) {
+        Set<Long> locked = new HashSet<>(habits.findHabitIdsWithCheckIns(userId));
         return habits.findByUserIdAndArchivedOrderByCreatedAtAsc(userId, archived).stream()
-                .map(HabitResponse::from)
+                .map(habit -> HabitResponse.from(habit, locked.contains(habit.getId())))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public HabitResponse get(Long userId, Long habitId) {
-        return HabitResponse.from(findOwned(userId, habitId));
+        Habit habit = findOwned(userId, habitId);
+        return HabitResponse.from(habit, habits.hasCheckIns(habitId));
     }
 
     @Transactional
     public HabitResponse create(Long userId, HabitRequest request) {
         Habit habit = new Habit(userId);
         apply(habit, request, today(userId));
-        return HabitResponse.from(habits.save(habit));
+        return HabitResponse.from(habits.save(habit), false);
     }
 
     /**
      * Replaces all editable fields. Changing points only affects future check-ins:
-     * each check-in stores the points it earned (added in Sprint 2).
+     * each check-in stores the points it earned.
+     * Frequency and target are locked after the first check-in (PRD §5.1), so streaks are always
+     * measured against the rules the user started with.
      */
     @Transactional
     public HabitResponse update(Long userId, Long habitId, HabitRequest request) {
         Habit habit = findOwned(userId, habitId);
+        boolean locked = habits.hasCheckIns(habitId);
+        if (locked && changesRules(habit, request)) {
+            throw new ApiException(HttpStatus.CONFLICT, "Frequency and target are locked after the first check-in. "
+                    + "To change them, archive this habit and create a new one.");
+        }
         apply(habit, request, habit.getStartDate());
-        return HabitResponse.from(habit);
+        return HabitResponse.from(habit, locked);
     }
 
     /** Archiving hides a habit without deleting its history. */
@@ -61,7 +72,13 @@ public class HabitService {
     public HabitResponse setArchived(Long userId, Long habitId, boolean archived) {
         Habit habit = findOwned(userId, habitId);
         habit.setArchived(archived);
-        return HabitResponse.from(habit);
+        return HabitResponse.from(habit, habits.hasCheckIns(habitId));
+    }
+
+    private static boolean changesRules(Habit habit, HabitRequest request) {
+        Frequency frequency = request.frequency() != null ? request.frequency() : Frequency.DAILY;
+        int targetCount = request.targetCount() != null ? request.targetCount() : 1;
+        return frequency != habit.getFrequency() || targetCount != habit.getTargetCount();
     }
 
     private void apply(Habit habit, HabitRequest request, LocalDate defaultStartDate) {
