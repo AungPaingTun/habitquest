@@ -39,6 +39,6 @@ public class AuthController {
     /** Returns the logged-in user. The JWT's subject holds the user id. */
     @GetMapping("/me")
     public UserResponse me(@AuthenticationPrincipal Jwt jwt) {
-        return authService.currentUser(Long.valueOf(jwt.getSubject()));
+        return authService.currentUser(CurrentUser.id(jwt));
     }
 }
