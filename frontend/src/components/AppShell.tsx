@@ -7,6 +7,7 @@ const NAV = [
   { to: '/', label: 'Today' },
   { to: '/habits', label: 'Habits' },
   { to: '/prizes', label: 'Prizes' },
+  { to: '/analytics', label: 'Stats' },
 ]
 
 /** Page frame for logged-in screens: navigation, points balance, level and log out. */

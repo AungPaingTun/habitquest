@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { analyticsKey } from '../analytics/analyticsApi'
 import { api } from '../lib/api'
 import { pointsKey, type PointsSummary } from '../points/pointsApi'
 import { todayKey } from '../today/todayApi'
@@ -34,6 +35,7 @@ function usePrizeMutation<TVariables, TResult>(request: (variables: TVariables) 
       if (affectsPoints) {
         queryClient.invalidateQueries({ queryKey: pointsKey })
         queryClient.invalidateQueries({ queryKey: todayKey })
+        queryClient.invalidateQueries({ queryKey: analyticsKey })
       }
     },
   })

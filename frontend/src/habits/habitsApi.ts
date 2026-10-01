@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
+import { analyticsKey } from '../analytics/analyticsApi'
 import { todayKey } from '../today/todayApi'
 
 export type Frequency = 'DAILY' | 'WEEKLY' | 'MONTHLY'
@@ -47,6 +48,7 @@ function useHabitMutation<TVariables>(request: (variables: TVariables) => Promis
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: habitsKey })
       queryClient.invalidateQueries({ queryKey: todayKey })
+      queryClient.invalidateQueries({ queryKey: analyticsKey })
     },
   })
 }

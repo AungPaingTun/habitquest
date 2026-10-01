@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router'
 import { GuestOnly, RequireAuth } from './auth/RequireAuth'
+import { AnalyticsPage } from './analytics/AnalyticsPage'
 import { HabitsPage } from './habits/HabitsPage'
 import { LoginPage } from './pages/LoginPage'
 import { PrizesPage } from './prizes/PrizesPage'
@@ -14,6 +15,7 @@ function App() {
       <Route path="/" element={<RequireAuth><TodayPage /></RequireAuth>} />
       <Route path="/habits" element={<RequireAuth><HabitsPage /></RequireAuth>} />
       <Route path="/prizes" element={<RequireAuth><PrizesPage /></RequireAuth>} />
+      <Route path="/analytics" element={<RequireAuth><AnalyticsPage /></RequireAuth>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { Frequency } from '../habits/habitsApi'
+import { analyticsKey } from '../analytics/analyticsApi'
 import { api } from '../lib/api'
 import { pointsKey, type PointsSummary } from '../points/pointsApi'
 
@@ -50,6 +51,7 @@ function useCheckInMutation(method: 'POST' | 'DELETE') {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: todayKey })
       queryClient.invalidateQueries({ queryKey: pointsKey })
+      queryClient.invalidateQueries({ queryKey: analyticsKey })
     },
   })
 }

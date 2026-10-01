@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+/* The whole app is dark: make native scrollbars, date pickers and form controls dark too. */
+:root {
+  color-scheme: dark;
+}

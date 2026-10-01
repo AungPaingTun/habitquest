@@ -99,7 +99,7 @@ Streak bonuses are **flat extra points, not multipliers**. They are easy to unde
 | Streaks | Current/best streak, flat bonuses | ✅ Done |
 | Prizes | Create prizes, redeem, redeem count | ✅ Done |
 | Dashboard | Today view: balance, level, streaks | ✅ Done |
-| Analytics | Weekly / monthly / yearly: completion rate per habit, points earned vs spent, best streaks, most-redeemed prizes, year heatmap | Sprint 3 |
+| Analytics | Weekly / monthly / yearly: completion rate per habit, points earned vs spent, best streaks, most-redeemed prizes, year heatmap | ✅ Done |
 | Levels | XP → level | ✅ Done |
 | Quality | Tests, CI, deployment to a custom domain | Sprint 4 |
 
