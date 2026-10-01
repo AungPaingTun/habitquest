@@ -72,6 +72,13 @@ public class Habit {
         this.endDate = endDate;
     }
 
+    /** Where the habit is in its date range on the given day (PRD §5.1). Archived is tracked separately. */
+    public HabitStatus statusOn(LocalDate day) {
+        if (day.isBefore(startDate)) return HabitStatus.UPCOMING;
+        if (endDate != null && day.isAfter(endDate)) return HabitStatus.COMPLETED;
+        return HabitStatus.ACTIVE;
+    }
+
     public void setArchived(boolean archived) {
         this.archived = archived;
     }
