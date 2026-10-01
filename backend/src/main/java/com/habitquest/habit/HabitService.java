@@ -1,6 +1,7 @@
 package com.habitquest.habit;
 
 import com.habitquest.common.ApiException;
+import com.habitquest.common.UserClock;
 import com.habitquest.habit.dto.HabitRequest;
 import com.habitquest.habit.dto.HabitResponse;
 import com.habitquest.user.User;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -18,10 +18,12 @@ public class HabitService {
 
     private final HabitRepository habits;
     private final UserRepository users;
+    private final UserClock userClock;
 
-    public HabitService(HabitRepository habits, UserRepository users) {
+    public HabitService(HabitRepository habits, UserRepository users, UserClock userClock) {
         this.habits = habits;
         this.users = users;
+        this.userClock = userClock;
     }
 
     @Transactional(readOnly = true)
@@ -93,6 +95,6 @@ public class HabitService {
         String timezone = users.findById(userId)
                 .map(User::getTimezone)
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "User no longer exists"));
-        return LocalDate.now(ZoneId.of(timezone));
+        return userClock.today(timezone);
     }
 }

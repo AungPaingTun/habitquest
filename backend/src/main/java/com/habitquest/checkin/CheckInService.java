@@ -67,17 +67,22 @@ public class CheckInService {
             throw conflict("Already checked in today.");
         }
         Frequency frequency = habit.getFrequency();
+        LocalDate periodStart = StreakCalculator.periodStart(frequency, today);
+        int target = StreakCalculator.effectiveTarget(frequency, habit.getTargetCount(), periodStart);
         int doneThisPeriod = StreakCalculator.countInCurrentPeriod(frequency, dates, today);
-        if (doneThisPeriod >= habit.getTargetCount()) {
+        if (doneThisPeriod >= target) {
             throw conflict("You've already reached this " + periodWord(frequency) + "'s target ("
-                    + doneThisPeriod + "/" + habit.getTargetCount() + ").");
+                    + doneThisPeriod + "/" + target + ").");
         }
 
         dates.add(today);
         Streak streak = StreakCalculator.calculate(frequency, habit.getTargetCount(), dates, today);
         // The bonus is paid on the check-in that completes the period: every check-in for daily habits,
-        // the one that reaches the target for weekly/monthly habits.
-        boolean completesPeriod = doneThisPeriod + 1 == habit.getTargetCount();
+        // the one that reaches the target for weekly/monthly habits. At most once per period, checked
+        // against stored logs, so raising the target mid-week can't pay the bonus again.
+        boolean bonusAlreadyPaid = logs.existsByHabitIdAndLogDateBetweenAndBonusAwardedGreaterThan(
+                habitId, periodStart, today, 0);
+        boolean completesPeriod = !bonusAlreadyPaid && doneThisPeriod + 1 >= target;
         int bonus = completesPeriod ? StreakRules.bonusFor(frequency, streak.current()) : 0;
 
         logs.save(new HabitLog(habitId, userId, today, habit.getPoints(), bonus));
@@ -139,10 +144,13 @@ public class CheckInService {
         Streak streak = StreakCalculator.calculate(habit.getFrequency(), habit.getTargetCount(), dates, asOf);
         boolean doneToday = dates.contains(today);
         int periodCount = StreakCalculator.countInCurrentPeriod(habit.getFrequency(), dates, asOf);
-        boolean canCheckIn = status == HabitStatus.ACTIVE && !doneToday && periodCount < habit.getTargetCount();
+        // e.g. "30× per month" shows as 28 in February
+        int target = StreakCalculator.effectiveTarget(habit.getFrequency(), habit.getTargetCount(),
+                StreakCalculator.periodStart(habit.getFrequency(), asOf));
+        boolean canCheckIn = status == HabitStatus.ACTIVE && !doneToday && periodCount < target;
 
         return new TodayHabit(habit.getId(), habit.getName(), habit.getIcon(), habit.getPoints(),
-                habit.getFrequency(), habit.getTargetCount(), habit.getStartDate(), habit.getEndDate(),
+                habit.getFrequency(), target, habit.getStartDate(), habit.getEndDate(),
                 status, doneToday, periodCount, streak.current(), streak.best(), canCheckIn);
     }
 

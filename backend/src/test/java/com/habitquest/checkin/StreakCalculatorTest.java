@@ -261,4 +261,26 @@ class StreakCalculatorTest {
     void periodStart_monthly_returnsFirstOfMonth() {
         assertThat(StreakCalculator.periodStart(Frequency.MONTHLY, d(2026, 2, 28))).isEqualTo(d(2026, 2, 1));
     }
+
+    @Test
+    void effectiveTarget_monthlyTargetAboveMonthLength_isCappedToDaysInMonth() {
+        assertThat(StreakCalculator.effectiveTarget(Frequency.MONTHLY, 30, LocalDate.of(2026, 2, 1))).isEqualTo(28);
+        assertThat(StreakCalculator.effectiveTarget(Frequency.MONTHLY, 30, LocalDate.of(2028, 2, 1))).isEqualTo(29);
+        assertThat(StreakCalculator.effectiveTarget(Frequency.MONTHLY, 31, LocalDate.of(2026, 4, 1))).isEqualTo(30);
+        assertThat(StreakCalculator.effectiveTarget(Frequency.MONTHLY, 10, LocalDate.of(2026, 2, 1))).isEqualTo(10);
+        assertThat(StreakCalculator.effectiveTarget(Frequency.WEEKLY, 7, LocalDate.of(2026, 9, 28))).isEqualTo(7);
+    }
+
+    @Test
+    void calculate_monthlyTarget30WithEveryDayOfFebruary_countsFebruaryAsMetSoStreakSurvives() {
+        List<LocalDate> logs = new java.util.ArrayList<>();
+        for (LocalDate d = LocalDate.of(2026, 1, 1); !d.isAfter(LocalDate.of(2026, 3, 30)); d = d.plusDays(1)) {
+            logs.add(d);
+        }
+
+        Streak streak = StreakCalculator.calculate(Frequency.MONTHLY, 30, logs, LocalDate.of(2026, 3, 30));
+
+        // January (31 ≥ 30), February (28 = all its days) and March (30) are all met.
+        assertThat(streak.current()).isEqualTo(3);
+    }
 }

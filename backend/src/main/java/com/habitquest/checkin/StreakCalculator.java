@@ -36,6 +36,15 @@ public final class StreakCalculator {
         };
     }
 
+    /**
+     * The target that can actually be reached in a period. With one check-in a day, February can't hold
+     * 30 check-ins, so a monthly target is capped at the month's length; otherwise the streak would
+     * break every short month even for a perfect user.
+     */
+    public static int effectiveTarget(Frequency frequency, int target, LocalDate periodStart) {
+        return frequency == Frequency.MONTHLY ? Math.min(target, periodStart.lengthOfMonth()) : target;
+    }
+
     static LocalDate previousPeriodStart(Frequency frequency, LocalDate periodStart) {
         return switch (frequency) {
             case DAILY -> periodStart.minusDays(1);
@@ -52,7 +61,7 @@ public final class StreakCalculator {
         Map<LocalDate, Long> checkInsPerPeriod = logDates.stream()
                 .collect(Collectors.groupingBy(d -> periodStart(frequency, d), Collectors.counting()));
         Set<LocalDate> metPeriods = checkInsPerPeriod.entrySet().stream()
-                .filter(e -> e.getValue() >= target)
+                .filter(e -> e.getValue() >= effectiveTarget(frequency, target, e.getKey()))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toCollection(HashSet::new));
 

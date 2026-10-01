@@ -1,6 +1,7 @@
 package com.habitquest.habit;
 
 import com.habitquest.common.ApiException;
+import com.habitquest.common.UserClock;
 import com.habitquest.habit.dto.HabitRequest;
 import com.habitquest.habit.dto.HabitResponse;
 import com.habitquest.user.User;
@@ -10,11 +11,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,6 +40,10 @@ class HabitServiceTest {
 
     @Mock
     private UserRepository users;
+
+    // Fixed instant: 2026-10-01 12:00 UTC is already 2026-10-02 in Kiritimati (UTC+14).
+    @Spy
+    private UserClock userClock = new UserClock(Clock.fixed(Instant.parse("2026-10-01T12:00:00Z"), ZoneOffset.UTC));
 
     @InjectMocks
     private HabitService service;
@@ -69,14 +77,12 @@ class HabitServiceTest {
     void create_withOnlyNameAndPoints_defaultsToDailyTargetOneAndTodayInUserZone() {
         stubUserAndSave();
 
-        LocalDate before = LocalDate.now(ZoneId.of(ZONE));
         HabitResponse response = service.create(USER_ID,
                 new HabitRequest("Read", null, 10, null, null, null, null));
-        LocalDate after = LocalDate.now(ZoneId.of(ZONE));
 
         assertThat(response.frequency()).isEqualTo(Frequency.DAILY);
         assertThat(response.targetCount()).isEqualTo(1);
-        assertThat(response.startDate()).isBetween(before, after);
+        assertThat(response.startDate()).isEqualTo(LocalDate.of(2026, 10, 2)); // user's date, not the server's 10-01
         assertThat(response.endDate()).isNull();
         assertThat(response.name()).isEqualTo("Read");
         assertThat(response.points()).isEqualTo(10);

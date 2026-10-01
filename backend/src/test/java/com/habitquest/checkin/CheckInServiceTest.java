@@ -255,6 +255,26 @@ class CheckInServiceTest {
     }
 
     @Test
+    void checkIn_targetRaisedAfterBonusAlreadyPaidThisWeek_paysNoSecondBonus() {
+        // Target was 2 and the bonus was paid on Tue 09-29; the user then raised it to 3 and checks in again.
+        Habit habit = activeHabit(Frequency.WEEKLY, 3, 20);
+        stubUserHabitClock(habit);
+        when(logs.findLogDates(HABIT_ID)).thenReturn(days(
+                LocalDate.of(2026, 9, 14), LocalDate.of(2026, 9, 15), LocalDate.of(2026, 9, 16),
+                LocalDate.of(2026, 9, 21), LocalDate.of(2026, 9, 22), LocalDate.of(2026, 9, 23),
+                LocalDate.of(2026, 9, 28), LocalDate.of(2026, 9, 29)));
+        when(logs.existsByHabitIdAndLogDateBetweenAndBonusAwardedGreaterThan(
+                HABIT_ID, LocalDate.of(2026, 9, 28), TODAY, 0)).thenReturn(true);
+        stubSummary();
+
+        CheckInResult result = service.checkIn(USER_ID, HABIT_ID);
+
+        assertThat(result.bonus()).isZero();
+        assertThat(result.pointsChange()).isEqualTo(20);
+        verify(points, times(1)).record(any(PointTransaction.class));
+    }
+
+    @Test
     void checkIn_weeklyTarget2ReachingTargetWithOnlyOnePriorMetWeek_paysNoBonus() {
         Habit habit = activeHabit(Frequency.WEEKLY, 2, 20);
         stubUserHabitClock(habit);
