@@ -2,6 +2,8 @@
 
 Build good habits, earn points, and spend them on rewards you set yourself.
 
+📄 Product requirements: [docs/PRD.md](docs/PRD.md)
+
 **Stack:** Java 21 · Spring Boot 4 · PostgreSQL 16 · React + TypeScript (Vite) · Tailwind CSS
 
 ## Run locally
