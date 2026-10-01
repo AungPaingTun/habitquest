@@ -22,4 +22,8 @@ public interface RedemptionRepository extends JpaRepository<Redemption, Long> {
             from Redemption r where r.userId = :userId group by r.prizeId
             """)
     List<PrizeStats> statsByUser(Long userId);
+
+    /** Redemptions in [from, to). */
+    List<Redemption> findByUserIdAndRedeemedAtGreaterThanEqualAndRedeemedAtLessThan(Long userId, Instant from,
+                                                                                   Instant to);
 }

@@ -20,4 +20,6 @@ public interface HabitLogRepository extends JpaRepository<HabitLog, Long> {
 
     /** All of a user's logs in one query, for building the Today view without one query per habit. */
     List<HabitLog> findByUserId(Long userId);
+
+    List<HabitLog> findByUserIdAndLogDateBetween(Long userId, LocalDate from, LocalDate to);
 }

@@ -10,6 +10,9 @@ public interface HabitRepository extends JpaRepository<Habit, Long> {
 
     List<Habit> findByUserIdAndArchivedOrderByCreatedAtAsc(Long userId, boolean archived);
 
+    /** All habits including archived ones (analytics still counts their past check-ins). */
+    List<Habit> findByUserIdOrderByCreatedAtAsc(Long userId);
+
     /** Looks up a habit only if it belongs to the user, so nobody can read or edit someone else's habit. */
     Optional<Habit> findByIdAndUserId(Long id, Long userId);
 

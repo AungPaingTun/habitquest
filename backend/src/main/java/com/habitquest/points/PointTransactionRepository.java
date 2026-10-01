@@ -4,6 +4,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.Instant;
 import java.util.List;
 
 public interface PointTransactionRepository extends JpaRepository<PointTransaction, Long> {
@@ -20,4 +21,8 @@ public interface PointTransactionRepository extends JpaRepository<PointTransacti
     long lifetimeXp(Long userId);
 
     List<PointTransaction> findByUserIdOrderByCreatedAtDescIdDesc(Long userId, Pageable pageable);
+
+    /** Ledger rows in [from, to). */
+    List<PointTransaction> findByUserIdAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(Long userId, Instant from,
+                                                                                       Instant to);
 }
