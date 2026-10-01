@@ -1,0 +1,16 @@
+# OS / IDE
+.DS_Store
+.idea/
+*.iml
+.vscode/
+
+# Env files
+.env
+.env.*
+
+# Java / Maven
+backend/target/
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/

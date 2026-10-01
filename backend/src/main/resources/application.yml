@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: habitquest
+
+  datasource:
+    # Values come from environment variables in production; defaults match docker-compose.yml for local dev.
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/habitquest}
+    username: ${DB_USERNAME:habitquest}
+    password: ${DB_PASSWORD:habitquest}
+
+  jpa:
+    # Flyway owns the schema. Hibernate only checks that entities match the tables.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
