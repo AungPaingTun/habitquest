@@ -1,11 +1,17 @@
+import { Navigate, Route, Routes } from 'react-router'
+import { GuestOnly, RequireAuth } from './auth/RequireAuth'
+import { HomePage } from './pages/HomePage'
+import { LoginPage } from './pages/LoginPage'
+import { RegisterPage } from './pages/RegisterPage'
+
 function App() {
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">
-      <div className="text-center space-y-3">
-        <h1 className="text-4xl font-bold">HabitQuest</h1>
-        <p className="text-slate-400">Build good habits. Earn points. Claim your rewards.</p>
-      </div>
-    </main>
+    <Routes>
+      <Route path="/login" element={<GuestOnly><LoginPage /></GuestOnly>} />
+      <Route path="/register" element={<GuestOnly><RegisterPage /></GuestOnly>} />
+      <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
