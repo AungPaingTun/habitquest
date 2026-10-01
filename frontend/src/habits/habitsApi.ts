@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
+import { todayKey } from '../today/todayApi'
 
 export type Frequency = 'DAILY' | 'WEEKLY' | 'MONTHLY'
 
@@ -36,12 +37,15 @@ export function useHabits(archived: boolean) {
   })
 }
 
-/** After any change, refetch every habit list (active and archived) so the screen stays in sync. */
+/** After any change, refetch the habit lists (active and archived) and the Today view so every screen stays in sync. */
 function useHabitMutation<TVariables>(request: (variables: TVariables) => Promise<Habit>) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: request,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: habitsKey }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: habitsKey })
+      queryClient.invalidateQueries({ queryKey: todayKey })
+    },
   })
 }
 

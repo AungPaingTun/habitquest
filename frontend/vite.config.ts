@@ -7,8 +7,9 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     // Forward /api calls to the Spring Boot backend, so the browser sees one origin (no CORS setup needed in dev).
+    // API_TARGET lets you point the dev server at a different backend, e.g. API_TARGET=http://localhost:8081
     proxy: {
-      '/api': 'http://localhost:8080',
+      '/api': process.env.API_TARGET ?? 'http://localhost:8080',
     },
   },
 })
