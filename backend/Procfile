@@ -1,0 +1,1 @@
+web: java -XX:MaxRAMPercentage=75 -jar target/habitquest-*.jar

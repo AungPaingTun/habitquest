@@ -4,9 +4,10 @@ spring:
 
   datasource:
     # Values come from environment variables in production; defaults match docker-compose.yml for local dev.
-    url: ${DB_URL:jdbc:postgresql://localhost:5433/habitquest}
-    username: ${DB_USERNAME:habitquest}
-    password: ${DB_PASSWORD:habitquest}
+    # On Heroku, the Java buildpack sets JDBC_DATABASE_* from the Postgres add-on.
+    url: ${DB_URL:${JDBC_DATABASE_URL:jdbc:postgresql://localhost:5433/habitquest}}
+    username: ${DB_USERNAME:${JDBC_DATABASE_USERNAME:habitquest}}
+    password: ${DB_PASSWORD:${JDBC_DATABASE_PASSWORD:habitquest}}
 
   jpa:
     # Flyway owns the schema. Hibernate only checks that entities match the tables.
@@ -19,7 +20,8 @@ spring:
     locations: classpath:db/migration
 
 server:
-  port: 8080
+  # Heroku tells the app which port to listen on via PORT.
+  port: ${PORT:8080}
 
 app:
   jwt:
