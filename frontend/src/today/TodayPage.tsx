@@ -1,5 +1,7 @@
 import { Link } from 'react-router'
 import { AppShell } from '../components/AppShell'
+import { Points } from '../components/PointsIcon'
+import { StreakBadge } from '../components/StreakBadge'
 import { Toast } from '../components/Toast'
 import { useToast } from '../components/useToast'
 import { describeFrequency, formatDate } from '../habits/habitsApi'
@@ -114,7 +116,7 @@ function LevelCard({ points }: { points: PointsSummary }) {
         </div>
         <div className="text-right">
           <p className="text-sm text-slate-400">Points to spend</p>
-          <p className="text-3xl font-bold text-amber-300">🪙 {points.balance}</p>
+          <p className="text-3xl font-bold text-amber-300"><Points value={points.balance} /></p>
         </div>
       </div>
       <div className="mt-4">
@@ -170,11 +172,7 @@ function HabitRow({ habit, busy, onCheckIn, onUndo }: RowProps) {
         </p>
       </div>
 
-      {habit.currentStreak > 0 && (
-        <span className="shrink-0 text-sm text-orange-300" title={`Current streak (best ${habit.bestStreak})`}>
-          🔥 {habit.currentStreak}
-        </span>
-      )}
+      <StreakBadge frequency={habit.frequency} streak={habit.currentStreak} best={habit.bestStreak} className="shrink-0 text-sm text-slate-200" />
 
       <div className="shrink-0 w-16 text-right">
         {habit.doneToday ? (

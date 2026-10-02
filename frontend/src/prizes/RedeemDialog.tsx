@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { Points } from '../components/PointsIcon'
 import type { Prize } from './prizesApi'
 
 type Props = {
@@ -27,7 +28,7 @@ export function RedeemDialog({ prize, balance, redeeming, onConfirm, onClose }: 
       <p className="text-5xl text-center" aria-hidden>{prize.icon ?? '🎁'}</p>
       <h2 id="redeem-title" className="text-xl font-semibold text-center mt-3">Redeem {prize.name}?</h2>
       <p className="text-slate-400 text-center mt-2">
-        This spends <span className="text-amber-300 font-semibold">🪙 {prize.cost}</span>. You'll have {balance - prize.cost} left.
+        This spends <Points value={prize.cost} className="text-amber-300 font-semibold" />. You'll have {balance - prize.cost} left.
         Your level and XP don't change.
       </p>
       <div className="flex gap-3 mt-6">

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { AppShell } from '../components/AppShell'
+import { Points } from '../components/PointsIcon'
 import { Toast } from '../components/Toast'
 import { useToast } from '../components/useToast'
 import { ApiError } from '../lib/api'
@@ -40,7 +41,7 @@ export function PrizesPage() {
       <div className="flex items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold">Prize shop</h1>
-          <p className="text-slate-400 text-sm">You have <span className="text-amber-300 font-semibold">🪙 {balance}</span> to spend</p>
+          <p className="text-slate-400 text-sm">You have <Points value={balance} className="text-amber-300 font-semibold" /> to spend</p>
         </div>
         <button onClick={() => setDialog({ mode: 'create' })} className="rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-semibold px-4 py-2">
           + Add prize
@@ -126,7 +127,7 @@ function PrizeCard({ prize, balance, onRedeem, onEdit, onToggleArchive }: CardPr
         <span className="size-12 shrink-0 grid place-items-center rounded-xl bg-slate-800 text-2xl" aria-hidden>{prize.icon ?? '🎁'}</span>
         <div className="min-w-0 flex-1">
           <p className="font-medium truncate">{prize.name}</p>
-          <p className="text-amber-300 font-semibold">🪙 {prize.cost}</p>
+          <p className="text-amber-300 font-semibold"><Points value={prize.cost} /></p>
         </div>
         {prize.redeemCount > 0 && (
           <span className="shrink-0 rounded-full bg-amber-400/15 text-amber-300 text-xs font-semibold px-2 py-1" title="Times redeemed">

@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useAuth } from '../auth/AuthContext'
+import { IconPicker } from '../components/IconPicker'
+import { HABIT_ICONS } from '../components/iconChoices'
 import { ApiError } from '../lib/api'
 import { todayIn, useCreateHabit, useUpdateHabit, type Frequency, type Habit, type HabitInput } from './habitsApi'
-
-const ICONS = ['🥗', '🏃', '💪', '📚', '💧', '🧘', '😴', '🦷', '✍️', '🎯', '🚭', '🧹']
 
 const FREQUENCIES: { value: Frequency; label: string; max: number }[] = [
   { value: 'DAILY', label: 'Daily', max: 1 },
@@ -107,25 +107,7 @@ export function HabitDialog({ habit, onClose }: Props) {
           />
         </Field>
 
-        <fieldset>
-          <legend className="text-sm text-slate-300 mb-2">Icon</legend>
-          <div className="flex flex-wrap gap-2">
-            {ICONS.map((emoji) => (
-              <button
-                key={emoji}
-                type="button"
-                onClick={() => setIcon(icon === emoji ? '' : emoji)}
-                aria-pressed={icon === emoji}
-                aria-label={`Icon ${emoji}`}
-                className={`size-10 rounded-lg text-xl border transition-colors ${
-                  icon === emoji ? 'border-emerald-400 bg-emerald-500/15' : 'border-slate-700 hover:border-slate-500'
-                }`}
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+        <IconPicker groups={HABIT_ICONS} value={icon} onChange={setIcon} accent="border-emerald-400 bg-emerald-500/15" />
 
         <Field label="Points per check-in (1–100)" error={fieldErrors.points}>
           <input

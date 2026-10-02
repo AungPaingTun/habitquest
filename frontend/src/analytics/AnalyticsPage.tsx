@@ -2,6 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { AppShell } from '../components/AppShell'
+import { Points } from '../components/PointsIcon'
+import { StreakFlame } from '../components/StreakBadge'
+import { streakTier, streakUnit } from '../components/streak'
 import { api } from '../lib/api'
 import { pointsKey, type Transaction } from '../points/pointsApi'
 import { Heatmap } from './Heatmap'
@@ -129,7 +132,7 @@ function HabitCompletion({ habits, isCurrent }: { habits: HabitStats[]; isCurren
       ) : (
         <ul className="space-y-4">
           {habits.map((h) => {
-            const unit = h.frequency === 'DAILY' ? 'day' : h.frequency === 'WEEKLY' ? 'week' : 'month'
+            const tier = streakTier(h.frequency, h.currentStreak)
             return (
               <li key={h.id}>
                 <div className="flex items-baseline justify-between gap-3 text-sm mb-1.5">
@@ -153,9 +156,16 @@ function HabitCompletion({ habits, isCurrent }: { habits: HabitStats[]; isCurren
                 >
                   <div className="h-full rounded-full" style={{ width: `${h.completionRate ?? 0}%`, background: viz.meterFill }} />
                 </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  🔥 {h.currentStreak} {unit}
-                  {h.currentStreak === 1 ? '' : 's'} streak · best {h.bestStreak}
+                <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
+                  {tier.visible ? (
+                    <>
+                      <StreakFlame flame={tier.flame} core={tier.core} glow={tier.glow} />
+                      <span className="text-slate-200 font-semibold">{h.currentStreak}</span> {streakUnit(h.frequency, h.currentStreak)} · {tier.name}
+                    </>
+                  ) : (
+                    'No streak yet'
+                  )}
+                  <span> · best {h.bestStreak} {streakUnit(h.frequency, h.bestStreak)}</span>
                 </p>
               </li>
             )
@@ -178,7 +188,7 @@ function TopPrizes({ prizes }: { prizes: Analytics['topPrizes'] }) {
             <li key={p.id} className="flex items-center gap-3 text-sm">
               <span className="text-xl" aria-hidden>{p.icon ?? '🎁'}</span>
               <span className="flex-1 truncate">{p.name}</span>
-              <span className="text-slate-400 tabular-nums">×{p.count} · 🪙 {p.pointsSpent}</span>
+              <span className="text-slate-400 tabular-nums">×{p.count} · <Points value={p.pointsSpent} /></span>
             </li>
           ))}
         </ul>

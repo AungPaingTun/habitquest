@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { NavLink } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { usePointsSummary } from '../points/pointsApi'
+import { Points } from './PointsIcon'
 
 const NAV = [
   { to: '/', label: 'Today' },
@@ -41,7 +42,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             {summary.data && (
               <>
                 <span className="rounded-full bg-amber-400/15 text-amber-300 font-semibold px-2.5 py-1" title="Points to spend">
-                  🪙 {summary.data.balance}
+                  <Points value={summary.data.balance} />
                 </span>
                 <span className="rounded-full bg-violet-500/15 text-violet-300 font-semibold px-2.5 py-1" title="Level">
                   Lv {summary.data.level}

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { IconPicker } from '../components/IconPicker'
+import { PRIZE_ICONS } from '../components/iconChoices'
 import { ApiError } from '../lib/api'
 import { useCreatePrize, useUpdatePrize, type Prize } from './prizesApi'
-
-const ICONS = ['🍲', '🍕', '🍔', '🍦', '☕', '🎮', '🎬', '🛍️', '📱', '✈️', '💆', '🎁']
 
 type Props = {
   /** The prize to edit, or undefined to create a new one. */
@@ -74,25 +74,7 @@ export function PrizeDialog({ prize, onClose }: Props) {
           {fieldErrors.name && <span className="text-xs text-red-300 mt-1 block">{fieldErrors.name}</span>}
         </label>
 
-        <fieldset>
-          <legend className="text-sm text-slate-300 mb-2">Icon</legend>
-          <div className="flex flex-wrap gap-2">
-            {ICONS.map((emoji) => (
-              <button
-                key={emoji}
-                type="button"
-                onClick={() => setIcon(icon === emoji ? '' : emoji)}
-                aria-pressed={icon === emoji}
-                aria-label={`Icon ${emoji}`}
-                className={`size-10 rounded-lg text-xl border transition-colors ${
-                  icon === emoji ? 'border-amber-400 bg-amber-400/15' : 'border-slate-700 hover:border-slate-500'
-                }`}
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+        <IconPicker groups={PRIZE_ICONS} value={icon} onChange={setIcon} accent="border-amber-400 bg-amber-400/15" />
 
         <label className="block">
           <span className="text-sm text-slate-300">Cost in points</span>
