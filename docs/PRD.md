@@ -76,6 +76,7 @@ Streak bonuses are **flat extra points, not multipliers**. They are easy to unde
 - A missed day (or a missed period target) resets the streak to 0.
 - The bonus amounts and thresholds live in one config class so they are easy to tune.
 - The current streak and best streak are shown for every habit.
+- **Streak display (TikTok-style):** the flame only appears from **3 days** in a row (**2** weeks/months for weekly/monthly habits). Its color heats up as the streak grows: orange 3+ → red 7+ (+2 bonus) → magenta 30+ (+4 bonus, glowing) → blue 100+ → gold 365+ (weekly: 2/3/8/26/52 weeks; monthly: 2/3/8/12/24 months). The number is always shown next to the flame, so color is never the only signal.
 
 ### 5.5 Prizes
 | Rule | Detail |
