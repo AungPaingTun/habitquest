@@ -9,8 +9,11 @@ Product rules live in docs/PRD.md (source of truth). How to run and deploy is in
 - Backend tests (`cd backend && ./mvnw verify`) need the Docker database running.
 
 ## Deployment & infrastructure
-- **Backend:** Heroku app `habitquest-api` (Basic dyno $7 + heroku-postgresql essential-0 $5 = $12/month of the $13
-  GitHub Student Pack credit). Heroku account: aungpaingtun577@gmail.com.
+- **Backend:** Heroku app `habitquest-api` (Eco dyno plan $5, shared by all Eco apps on the account + heroku-postgresql
+  essential-0 $5 = $10/month of the $13 GitHub Student Pack credit). Heroku account: aungpaingtun577@gmail.com.
+  Eco dynos sleep after 30 min idle; the first request after that takes ~10-15 s while Spring Boot starts.
+  Config var `SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=5` keeps room in the 20-connection DB for a second app
+  sharing it later (give that app its own schema).
   Deploy from the repo root: `git subtree push --prefix backend heroku main`
   Health: https://habitquest-api-35269eb9ad8d.herokuapp.com/actuator/health
   The database login comes from `JDBC_DATABASE_*` (set by the Java buildpack); `JWT_SECRET` is a config var.
