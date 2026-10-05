@@ -11,6 +11,25 @@ const NAV = [
   { to: '/analytics', label: 'Stats' },
 ]
 
+function NavTabs({ className }: { className: string }) {
+  return (
+    <nav className={`${className} text-sm`}>
+      {NAV.map((item) => (
+        <NavLink
+          key={item.to}
+          to={item.to}
+          end
+          className={({ isActive }) =>
+            `px-2.5 py-1.5 rounded-lg text-center ${isActive ? 'bg-slate-800 text-slate-100' : 'text-slate-400 hover:text-slate-200'}`
+          }
+        >
+          {item.label}
+        </NavLink>
+      ))}
+    </nav>
+  )
+}
+
 /** Page frame for logged-in screens: navigation, points balance, level and log out. */
 export function AppShell({ children }: { children: ReactNode }) {
   const { logout } = useAuth()
@@ -20,22 +39,9 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <header className="border-b border-slate-800 sticky top-0 bg-slate-950/90 backdrop-blur z-10">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-1 sm:gap-4 min-w-0">
-            <span className="text-emerald-400 font-semibold hidden sm:inline">HabitQuest</span>
-            <nav className="flex gap-1 text-sm">
-              {NAV.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end
-                  className={({ isActive }) =>
-                    `px-2.5 py-1.5 rounded-lg ${isActive ? 'bg-slate-800 text-slate-100' : 'text-slate-400 hover:text-slate-200'}`
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </nav>
+          <div className="flex items-center gap-4 min-w-0">
+            <span className="text-emerald-400 font-semibold">HabitQuest</span>
+            <NavTabs className="hidden sm:flex gap-1" />
           </div>
 
           <div className="flex items-center gap-2 text-sm shrink-0">
@@ -54,6 +60,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             </button>
           </div>
         </div>
+        {/* Phones: tabs get their own row so they never run under the points and level badges. */}
+        <NavTabs className="sm:hidden grid grid-cols-4 gap-1 px-4 pb-2" />
       </header>
       <main className="max-w-3xl mx-auto px-4 py-8">{children}</main>
     </div>
