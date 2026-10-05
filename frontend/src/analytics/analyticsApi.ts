@@ -88,10 +88,9 @@ export function periodLabel(a: Pick<Analytics, 'period' | 'start' | 'end'>): str
   const end = parseDay(a.end)
   if (a.period === 'YEAR') return String(start.getFullYear())
   if (a.period === 'MONTH') return start.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
-  const sameMonth = start.getMonth() === end.getMonth()
-  const from = start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-  const to = end.toLocaleDateString(undefined, sameMonth ? { day: 'numeric', year: 'numeric' } : { month: 'short', day: 'numeric', year: 'numeric' })
-  return `${from} – ${to}`
+  // formatRange drops repeated parts itself: "Oct 5 – 11, 2026", "Sep 28 – Oct 4, 2026", "Dec 28, 2026 – Jan 3, 2027".
+  // (Formatting the end date alone as day + year has no standard pattern; Chrome prints "2026 (day: 11)".)
+  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' }).formatRange(start, end)
 }
 
 /** Short x-axis label for a bucket key. */
