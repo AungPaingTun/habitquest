@@ -40,13 +40,14 @@ export function Heatmap({ data }: { data: HeatmapData }) {
   const width = weeks.length * (CELL + GAP)
   const height = 7 * (CELL + GAP)
   const totalCheckIns = data.days.reduce((sum, d) => sum + d.count, 0)
+  const summary = `${totalCheckIns} check-in${totalCheckIns === 1 ? '' : 's'} on ${activeDays} day${activeDays === 1 ? '' : 's'}`
 
   return (
     <section className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-2 mb-4">
         <h2 className="font-semibold">{data.year} at a glance</h2>
         <p className="text-sm text-slate-400">
-          {totalCheckIns} check-ins on {activeDays} days{data.maxCount > 0 && ` · busiest day ${data.maxCount}`}
+          {summary}{data.maxCount > 0 && ` · busiest day ${data.maxCount}`}
         </p>
       </div>
 
@@ -55,7 +56,7 @@ export function Heatmap({ data }: { data: HeatmapData }) {
           width={width + 30}
           height={height + 18}
           role="img"
-          aria-label={`Check-ins per day in ${data.year}: ${totalCheckIns} check-ins on ${activeDays} days.`}
+          aria-label={`Check-ins per day in ${data.year}: ${summary}.`}
         >
           {monthLabels.map((m) => (
             <text key={m.label} x={30 + m.col * (CELL + GAP)} y={10} fill={viz.muted} fontSize={10}>{m.label}</text>

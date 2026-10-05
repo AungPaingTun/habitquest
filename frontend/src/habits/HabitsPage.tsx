@@ -63,7 +63,7 @@ export function HabitsPage() {
 
       <ul className="space-y-3">
         {habits.data?.map((habit) => (
-          <li key={habit.id} className="flex items-center gap-4 bg-slate-900 border border-slate-800 rounded-2xl p-4">
+          <li key={habit.id} className="flex items-center gap-3 sm:gap-4 bg-slate-900 border border-slate-800 rounded-2xl p-4">
             <span className="size-12 shrink-0 grid place-items-center rounded-xl bg-slate-800 text-2xl" aria-hidden>
               {habit.icon ?? '⭐'}
             </span>
@@ -73,10 +73,12 @@ export function HabitsPage() {
               <p className="text-sm text-slate-400">
                 {describeFrequency(habit)}
                 {habit.endDate && <> · until {formatDate(habit.endDate)}</>}
+                {/* On phones the points badge is hidden to give the name room, so show points here. */}
+                <span className="sm:hidden text-emerald-300"> · +{habit.points} pts</span>
               </p>
             </div>
 
-            <span className="shrink-0 rounded-full bg-emerald-500/15 text-emerald-300 text-sm font-semibold px-3 py-1">
+            <span className="hidden sm:inline shrink-0 rounded-full bg-emerald-500/15 text-emerald-300 text-sm font-semibold px-3 py-1">
               +{habit.points} pts
             </span>
 
