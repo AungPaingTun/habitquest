@@ -1,0 +1,10 @@
+# Profile for the one-off demo seeder (com.habitquest.demo.DemoSeeder): seeds, then shuts the app down.
+server:
+  # Random free port, so it never clashes with a running backend. Nothing is served while it seeds.
+  port: 0
+
+app:
+  demo:
+    # Public on purpose: shown in the README so reviewers can log in.
+    email: ${DEMO_EMAIL:demo@aungpaingtun.dev}
+    password: ${DEMO_PASSWORD:habitquest-demo}
