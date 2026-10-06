@@ -3,8 +3,8 @@
 | | |
 |---|---|
 | **Owner** | Aung Paing Tun |
-| **Status** | v1 (private prototype), in development |
-| **Last updated** | 2026-10-01 |
+| **Status** | v1 MVP: live at https://habitquest.aungpaingtun.dev, feature-complete |
+| **Last updated** | 2026-10-06 |
 
 ## 1. Problem
 
@@ -90,7 +90,7 @@ Streak bonuses are **flat extra points, not multipliers**. They are easy to unde
 
 ## 6. Features by version
 
-### v1: private prototype
+### v1: MVP (personal use)
 | Area | Feature | Status |
 |---|---|---|
 | Accounts | Sign up, log in, log out (email + password, JWT) | ✅ Done |
@@ -104,7 +104,7 @@ Streak bonuses are **flat extra points, not multipliers**. They are easy to unde
 | Levels | XP → level | ✅ Done |
 | Quality | Tests, CI, deployment to a custom domain | Sprint 4 |
 
-### v2: public (after the prototype)
+### v2: public (after the MVP)
 - Profile visibility: **private** (default) or **public**
 - Public profile: display name, avatar, level, XP, streaks, chosen habits
 - Follow friends; weekly leaderboards (by XP earned that week, not balance)
