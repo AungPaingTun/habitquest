@@ -10,7 +10,7 @@ Product rules live in docs/PRD.md (source of truth). How to run and deploy is in
 
 ## Deployment & infrastructure
 - **Backend:** Heroku app `habitquest-api` (Eco dyno plan $5, shared by all Eco apps on the account + heroku-postgresql
-  essential-0 $5 = $10/month of the $13 GitHub Student Pack credit). Heroku account: aungpaingtun577@gmail.com.
+  essential-0 $5 = $10/month of the $13 GitHub Student Pack credit).
   Eco dynos sleep after 30 min idle; the first request after that takes ~10-15 s while Spring Boot starts.
   Config var `SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE=5` keeps room in the 20-connection DB for a second app
   sharing it later (give that app its own schema).
@@ -19,7 +19,7 @@ Product rules live in docs/PRD.md (source of truth). How to run and deploy is in
   The database login comes from `JDBC_DATABASE_*` (set by the Java buildpack); `JWT_SECRET` is a config var.
 - **Frontend:** Cloudflare Worker `habitquest` (frontend/wrangler.jsonc). It serves the React build and forwards `/api/*` to
   Heroku (frontend/worker/index.ts, `API_ORIGIN` var). Deploy: `cd frontend && npm run deploy`.
-  Wrangler is logged in as aungpaingtun577@gmail.com.
+  Wrangler is logged in on the user's Cloudflare account.
 - **Domain:** aungpaingtun.dev + www, registered at Name.com (expires 2027-10-02, auto-renew OFF), DNS on Cloudflare
   (nameservers aspen/nile.ns.cloudflare.com). .dev is HSTS-preloaded, so it's HTTPS only.
 - **CI:** .github/workflows/ci.yml runs backend tests against a Postgres 16 service on 5433, then frontend lint and build.
