@@ -163,7 +163,7 @@ function HabitRow({ habit, busy, onCheckIn, onUndo }: RowProps) {
       <span className="text-2xl shrink-0" aria-hidden>{habit.icon ?? '⭐'}</span>
 
       <div className="min-w-0 flex-1">
-        <p className={`font-medium truncate ${habit.doneToday ? 'text-slate-400 line-through decoration-slate-600' : ''}`}>
+        <p className={`font-medium line-clamp-2 break-words sm:line-clamp-none sm:truncate ${habit.doneToday ? 'text-slate-400 line-through decoration-slate-600' : ''}`}>
           {habit.name}
         </p>
         <p className="text-sm text-slate-400">
