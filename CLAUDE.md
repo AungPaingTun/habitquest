@@ -22,6 +22,8 @@ Product rules live in docs/PRD.md (source of truth). How to run and deploy is in
   Wrangler is logged in on the user's Cloudflare account.
 - **Domain:** aungpaingtun.dev + www, registered at Name.com (expires 2027-10-02, auto-renew OFF), DNS on Cloudflare
   (nameservers aspen/nile.ns.cloudflare.com). .dev is HSTS-preloaded, so it's HTTPS only.
+- **Security:** Cloudflare rate-limit rule on `/api/auth/login` (5 requests per 10 s per IP, then blocked 10 s; free plan allows one rule).
+  Static security headers live in frontend/public/_headers. GitHub Dependabot and secret scanning with push protection are on.
 - **CI:** .github/workflows/ci.yml runs backend tests against a Postgres 16 service on 5433, then frontend lint and build.
 - **Demo account:** demo@aungpaingtun.dev / habitquest-demo (public on purpose). Refresh it on prod with
   `heroku run:detached -a habitquest-api -- java -Dspring.profiles.active=demo-seed -jar target/backend-0.0.1-SNAPSHOT.jar`
