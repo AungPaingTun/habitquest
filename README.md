@@ -2,10 +2,17 @@
 
 Build good habits, earn points, and spend them on rewards you set yourself.
 
-**Live demo: https://aungpaingtun.dev**
+**Live demo: https://habitquest.aungpaingtun.dev**
 Log in with `demo@aungpaingtun.dev` / `habitquest-demo` to see an account with two months of history, or register your own.
+The API runs on a Heroku dyno that sleeps when idle, so the first request after a quiet spell can take 10 to 15 seconds.
 
 ![CI](https://github.com/AungPaingTun/habitquest/actions/workflows/ci.yml/badge.svg)
+
+| Today | Prize shop | Stats |
+|---|---|---|
+| ![Today page with level, points and five habits](docs/screenshots/today.png) | ![Prize shop with four rewards](docs/screenshots/prizes.png) | ![Monthly stats with points chart and habit completion](docs/screenshots/stats.png) |
+
+<img src="docs/screenshots/today-phone.png" alt="Today page on a phone" width="260">
 
 ## What it does
 
@@ -32,7 +39,7 @@ The full rules, and the reasons behind them, are in the [product requirements](d
 ## How it fits together
 
 ```
-Browser ──► aungpaingtun.dev (Cloudflare Worker)
+Browser ──► habitquest.aungpaingtun.dev (Cloudflare Worker)
                ├─ /*      → React app (static files)
                └─ /api/*  → forwarded to Heroku ──► Spring Boot API ──► PostgreSQL
 ```
@@ -45,6 +52,12 @@ Some design choices worth noting:
 - **Time zones:** "today" is worked out in each user's own time zone, not the server's.
 - **Safe redeeming:** the user row is locked during a redeem, so a double-click can't spend the same points twice.
 - **Locked rules:** a habit's frequency and target lock after the first check-in, and a prize's cost never changes. Streaks and goals can't be gamed by editing them.
+
+## What I'd build next
+
+- **Public profiles and friends:** optional public profile with level and streaks, following friends, and weekly leaderboards ranked by XP earned that week (not balance, so spending isn't punished).
+- **Hardening for a public launch:** login rate limiting and account lockout.
+- **Reminders:** a daily nudge for habits not yet done.
 
 ## Run locally
 
