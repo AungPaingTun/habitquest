@@ -11,13 +11,15 @@ import java.time.LocalDate;
 
 /** Body for creating or editing a habit. Cross-field rules (target vs frequency, dates) live in HabitService. */
 public record HabitRequest(
-        @NotBlank @Size(max = 100) String name,
-        @Size(max = 16) String icon,
-        @NotNull @Min(1) @Max(100) Integer points,
+        @NotBlank(message = "Give your habit a name") @Size(max = 100, message = "Name can be at most 100 characters") String name,
+        @Size(max = 16, message = "Pick a single emoji as the icon") String icon,
+        @NotNull(message = "Choose how many points it's worth")
+        @Min(value = 1, message = "Points must be between 1 and 100")
+        @Max(value = 100, message = "Points must be between 1 and 100") Integer points,
         // Optional: defaults to DAILY.
         Frequency frequency,
         // Optional: defaults to 1. Times per week/month for WEEKLY/MONTHLY habits.
-        @Min(1) Integer targetCount,
+        @Min(value = 1, message = "Target must be at least once") Integer targetCount,
         // Optional: defaults to today in the user's time zone.
         LocalDate startDate,
         // Optional: null means no end date.

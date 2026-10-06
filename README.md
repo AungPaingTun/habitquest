@@ -25,7 +25,7 @@ The full rules, and the reasons behind them, are in the [product requirements](d
 |---|---|
 | **Backend** | Java 21 · Spring Boot 4 · Spring Security (JWT) · Spring Data JPA · Flyway · PostgreSQL 16 |
 | **Frontend** | React · TypeScript · Vite · Tailwind CSS · TanStack Query · Recharts |
-| **Testing** | JUnit 5 · Spring Boot integration tests against a real Postgres (184 tests) |
+| **Testing** | JUnit 5 · Spring Boot integration tests against a real Postgres (187 tests) |
 | **CI** | GitHub Actions: backend tests, frontend lint and build on every push |
 | **Hosting** | Cloudflare Workers (frontend and `/api` proxy) · Heroku (API and Postgres) · domain on Cloudflare DNS |
 
