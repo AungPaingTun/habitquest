@@ -56,10 +56,22 @@ public class SecurityConfig {
     }
 
     private static SecretKey signingKey(JwtProperties properties) {
-        byte[] bytes = properties.secret().getBytes(StandardCharsets.UTF_8);
+        // Heroku sets DYNO on every dyno, so its presence means we're running in production.
+        return new SecretKeySpec(checkedSecret(properties.secret(), System.getenv("DYNO") != null), "HmacSHA256");
+    }
+
+    /**
+     * The local-dev default in application.yml is public (the repo is open source), so anyone could sign tokens with it.
+     * If JWT_SECRET ever goes missing in production, refuse to start rather than silently accept forged logins.
+     */
+    static byte[] checkedSecret(String secret, boolean production) {
+        byte[] bytes = secret.getBytes(StandardCharsets.UTF_8);
         if (bytes.length < 32) {
             throw new IllegalStateException("app.jwt.secret must be at least 32 bytes for HS256");
         }
-        return new SecretKeySpec(bytes, "HmacSHA256");
+        if (production && secret.startsWith("local-dev-secret")) {
+            throw new IllegalStateException("JWT_SECRET is not set: refusing to start with the public dev secret");
+        }
+        return bytes;
     }
 }
