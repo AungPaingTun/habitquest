@@ -17,3 +17,6 @@ frontend/dist/
 
 # Cloudflare Wrangler
 frontend/.wrangler/
+
+# Personal Claude Code notes (kept local, not published)
+CLAUDE.local.md
