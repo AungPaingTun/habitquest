@@ -32,17 +32,26 @@ The full rules, and the reasons behind them, are in the [product requirements](d
 |---|---|
 | **Backend** | Java 21 · Spring Boot 4 · Spring Security (JWT) · Spring Data JPA · Flyway · PostgreSQL 16 |
 | **Frontend** | React · TypeScript · Vite · Tailwind CSS · TanStack Query · Recharts |
-| **Testing** | JUnit 5 · Spring Boot integration tests against a real Postgres (187 tests) |
+| **Testing** | JUnit 5 · Spring Boot integration tests against a real Postgres (191 tests) |
 | **CI** | GitHub Actions: backend tests, frontend lint and build on every push |
 | **Hosting** | Cloudflare Workers (frontend and `/api` proxy) · Heroku (API and Postgres) · domain on Cloudflare DNS |
 
 ## How it fits together
 
+```mermaid
+flowchart LR
+    B[Browser] --> W["Cloudflare Worker<br/>habitquest.aungpaingtun.dev"]
+    W -- "/*" --> S["React app<br/>(static files)"]
+    W -- "/api/*" --> H["Spring Boot API<br/>(Heroku)"]
+    H --> DB[(PostgreSQL)]
 ```
-Browser ──► habitquest.aungpaingtun.dev (Cloudflare Worker)
-               ├─ /*      → React app (static files)
-               └─ /api/*  → forwarded to Heroku ──► Spring Boot API ──► PostgreSQL
-```
+
+**How a request flows:**
+
+1. You log in. `POST /api/auth/login` returns a JWT (a signed token that proves who you are). The React app keeps it in `localStorage`.
+2. Every later call sends it as `Authorization: Bearer <token>`.
+3. The Cloudflare Worker forwards `/api/*` to Heroku. Everything else is the React app.
+4. Spring Security checks the token. Then: controller → service (the rules) → repository → PostgreSQL.
 
 The browser only ever talks to one origin, so there is no CORS setup.
 
@@ -56,8 +65,38 @@ Some design choices worth noting:
 ## What I'd build next
 
 - **Public profiles and friends:** optional public profile with level and streaks, following friends, and weekly leaderboards ranked by XP earned that week (not balance, so spending isn't punished).
-- **Hardening for a public launch:** login rate limiting and account lockout.
+- **Hardening for a public launch:** account lockout after repeated failed logins (login rate limiting already runs at Cloudflare).
 - **Reminders:** a daily nudge for habits not yet done.
+
+## API endpoints
+
+All endpoints need a JWT, except register, login and the health check.
+
+| Method | Path | Description | Auth |
+|---|---|---|---|
+| POST | `/api/auth/register` | Create an account, returns a JWT | No |
+| POST | `/api/auth/login` | Log in, returns a JWT | No |
+| GET | `/api/auth/me` | Current user | Yes |
+| GET | `/api/habits?archived=false` | List habits (or archived ones) | Yes |
+| GET | `/api/habits/{id}` | One habit | Yes |
+| POST | `/api/habits` | Create a habit | Yes |
+| PUT | `/api/habits/{id}` | Edit a habit | Yes |
+| POST | `/api/habits/{id}/archive` | Archive a habit | Yes |
+| POST | `/api/habits/{id}/restore` | Restore an archived habit | Yes |
+| GET | `/api/today` | Today's habits and their status | Yes |
+| POST | `/api/habits/{id}/check-in` | Check in for today | Yes |
+| DELETE | `/api/habits/{id}/check-in` | Undo today's check-in | Yes |
+| GET | `/api/points/summary` | Balance, lifetime XP, level | Yes |
+| GET | `/api/points/history?limit=50` | Points ledger rows | Yes |
+| GET | `/api/prizes?archived=false` | List prizes (or archived ones) | Yes |
+| POST | `/api/prizes` | Create a prize | Yes |
+| PUT | `/api/prizes/{id}` | Edit a prize | Yes |
+| POST | `/api/prizes/{id}/archive` | Archive a prize | Yes |
+| POST | `/api/prizes/{id}/restore` | Restore an archived prize | Yes |
+| POST | `/api/prizes/{id}/redeem` | Spend points on a prize | Yes |
+| GET | `/api/analytics?period=WEEK&date=` | Stats for a week, month or year | Yes |
+| GET | `/api/analytics/heatmap?year=` | Check-ins per day for a year | Yes |
+| GET | `/actuator/health` | Health check | No |
 
 ## Run locally
 
@@ -75,6 +114,20 @@ cd frontend && npm install && npm run dev
 ```
 
 Health check: `curl localhost:8080/actuator/health`. Run the backend tests with `cd backend && ./mvnw verify` (needs the Docker database running).
+
+### Environment variables
+
+Locally, all of these have defaults, so you don't need to set any.
+
+| Name | Used by | Purpose |
+|---|---|---|
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | backend | Database login (on Heroku: `JDBC_DATABASE_*` from the add-on) |
+| `JWT_SECRET` | backend | Signs login tokens. Must be set in production; the app refuses to start on Heroku with the dev default |
+| `JWT_EXPIRATION` | backend | Token lifetime (default `7d`) |
+| `PORT` | backend | HTTP port (default `8080`) |
+| `DEMO_EMAIL`, `DEMO_PASSWORD` | backend (`demo-seed` profile) | Demo account login |
+| `API_TARGET` | frontend dev server | Backend to proxy `/api` to (default `http://localhost:8080`) |
+| `API_ORIGIN` | Cloudflare Worker | Heroku URL to forward `/api` to (set in `wrangler.jsonc`) |
 
 ### Demo data
 
@@ -103,8 +156,12 @@ On Heroku, the database login comes from the Postgres add-on, and `JWT_SECRET` i
 ## Project layout
 
 ```
-backend/     Spring Boot API (Flyway migrations in src/main/resources/db/migration)
-frontend/    React app, plus worker/ (Cloudflare Worker that forwards /api) and wrangler.jsonc
-docs/PRD.md  Product rules and decisions log
+backend/src/main/java/com/habitquest/
+  auth/  habit/  checkin/  points/  prize/  analytics/  user/  common/  demo/
+     └─ one folder per feature: controller → service → repository, plus dto/
+backend/src/main/resources/db/migration/   Flyway SQL migrations
+frontend/src/        pages/, components/, lib/api.ts, plus one folder per feature
+frontend/worker/     Cloudflare Worker that forwards /api (config in wrangler.jsonc)
+docs/PRD.md          Product rules and decisions log
 docker-compose.yml   local PostgreSQL
 ```
