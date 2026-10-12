@@ -12,11 +12,19 @@ interface Env {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
+    // Only forward plain /api/... paths. An encoded letter like /%61pi/auth/login would dodge Cloudflare's
+    // rate-limit rule (it matches /api/auth/), yet Spring decodes it and still runs the login.
+    if (!url.pathname.startsWith('/api/') || url.pathname.includes('%')) {
+      return new Response('Not found', { status: 404 })
+    }
+    if (!env.ORIGIN_KEY) {
+      // Heroku rejects requests without the key, so say why here instead of returning confusing 403s.
+      return new Response('Server misconfigured: ORIGIN_KEY secret is not set', { status: 500 })
+    }
     const target = new URL(url.pathname + url.search, env.API_ORIGIN)
     const forwarded = new Request(target, request)
-    if (env.ORIGIN_KEY) {
-      forwarded.headers.set('X-Origin-Key', env.ORIGIN_KEY)
-    }
+    // set() also replaces any X-Origin-Key the client sent itself.
+    forwarded.headers.set('X-Origin-Key', env.ORIGIN_KEY)
     return fetch(forwarded)
   },
 }

@@ -50,6 +50,17 @@ class OriginKeyFilterTest {
     }
 
     @Test
+    void encodedPath_stillNeedsKey() throws Exception {
+        // %61 is "a": Spring routes /%61pi/auth/login to /api/auth/login, so it must not skip the check.
+        assertThat(run(KEY, "/%61pi/auth/login", null).status()).isEqualTo(403);
+    }
+
+    @Test
+    void pathOutsideApi_stillNeedsKey() throws Exception {
+        assertThat(run(KEY, "/actuator/info", null).status()).isEqualTo(403);
+    }
+
+    @Test
     void healthCheck_doesNotNeedKey() throws Exception {
         assertThat(run(KEY, "/actuator/health", null).passedThrough()).isTrue();
     }

@@ -38,6 +38,7 @@ class SecurityConfigTest {
     void isProduction_appEnvProd_isTrueOnAnyHost() {
         assertThat(SecurityConfig.isProduction("prod", null)).isTrue();
         assertThat(SecurityConfig.isProduction("PROD", null)).isTrue();
+        assertThat(SecurityConfig.isProduction("production", null)).isTrue();
     }
 
     @Test
@@ -49,5 +50,32 @@ class SecurityConfigTest {
     void isProduction_localDev_isFalse() {
         assertThat(SecurityConfig.isProduction(null, null)).isFalse();
         assertThat(SecurityConfig.isProduction("dev", null)).isFalse();
+    }
+
+    private static final String ORIGIN_KEY = "0123456789abcdef0123456789abcdef";
+
+    @Test
+    void checkedOriginKey_missingLocally_turnsCheckOff() {
+        assertThat(SecurityConfig.checkedOriginKey(null, false)).isNull();
+        assertThat(SecurityConfig.checkedOriginKey("", false)).isNull();
+    }
+
+    @Test
+    void checkedOriginKey_missingInProduction_refusesToStart() {
+        assertThatThrownBy(() -> SecurityConfig.checkedOriginKey("", true))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("ORIGIN_KEY is not set");
+    }
+
+    @Test
+    void checkedOriginKey_tooShort_isRejected() {
+        assertThatThrownBy(() -> SecurityConfig.checkedOriginKey("short", false))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("at least 32 characters");
+    }
+
+    @Test
+    void checkedOriginKey_longKeyInProduction_isAllowed() {
+        assertThat(SecurityConfig.checkedOriginKey(ORIGIN_KEY, true)).isEqualTo(ORIGIN_KEY);
     }
 }

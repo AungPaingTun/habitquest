@@ -30,8 +30,9 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http, @Value("${app.origin-key:}") String originKey)
             throws Exception {
         http
-                // Rejects /api requests that didn't come through the Cloudflare Worker (see OriginKeyFilter).
-                .addFilterBefore(new OriginKeyFilter(originKey), BearerTokenAuthenticationFilter.class)
+                // Rejects requests that didn't come through the Cloudflare Worker (see OriginKeyFilter).
+                .addFilterBefore(new OriginKeyFilter(checkedOriginKey(originKey, isProduction())),
+                        BearerTokenAuthenticationFilter.class)
                 // No cookies/sessions: the client sends "Authorization: Bearer <token>" on every request,
                 // so CSRF protection (which defends cookie-based sessions) isn't needed.
                 .csrf(csrf -> csrf.disable())
@@ -61,16 +62,36 @@ public class SecurityConfig {
     }
 
     private static SecretKey signingKey(JwtProperties properties) {
-        return new SecretKeySpec(checkedSecret(properties.secret(),
-                isProduction(System.getenv("APP_ENV"), System.getenv("DYNO"))), "HmacSHA256");
+        return new SecretKeySpec(checkedSecret(properties.secret(), isProduction()), "HmacSHA256");
+    }
+
+    private static boolean isProduction() {
+        return isProduction(System.getenv("APP_ENV"), System.getenv("DYNO"));
     }
 
     /**
-     * APP_ENV=prod marks production on any host. DYNO (set by Heroku on every dyno) is a fallback,
+     * Without ORIGIN_KEY the Heroku URL accepts requests that skipped Cloudflare. In production, refuse to start
+     * rather than silently run unprotected. A short key could be guessed, so require 32+ characters everywhere.
+     */
+    static String checkedOriginKey(String key, boolean production) {
+        if (key == null || key.isBlank()) {
+            if (production) {
+                throw new IllegalStateException("ORIGIN_KEY is not set: refusing to start without the Cloudflare origin check");
+            }
+            return null;
+        }
+        if (key.length() < 32) {
+            throw new IllegalStateException("app.origin-key must be at least 32 characters");
+        }
+        return key;
+    }
+
+    /**
+     * APP_ENV=prod (or production) marks production on any host. DYNO (set by Heroku on every dyno) is a fallback,
      * so the dev-secret guard keeps working even if APP_ENV is forgotten on Heroku.
      */
     static boolean isProduction(String appEnv, String dyno) {
-        return "prod".equalsIgnoreCase(appEnv) || dyno != null;
+        return "prod".equalsIgnoreCase(appEnv) || "production".equalsIgnoreCase(appEnv) || dyno != null;
     }
 
     /**

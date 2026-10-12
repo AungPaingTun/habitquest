@@ -11,13 +11,14 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 
 /**
- * Only lets /api requests through if they came via the Cloudflare Worker, which adds a secret X-Origin-Key header.
+ * Only lets requests through if they came via the Cloudflare Worker, which adds a secret X-Origin-Key header.
  * The Heroku URL is public, so without this anyone could call it directly and skip Cloudflare's login rate limit.
- * If no key is configured (local dev, tests), every request is allowed.
+ * If no key is configured (local dev, tests), every request is allowed; SecurityConfig refuses that in production.
  */
 public class OriginKeyFilter extends OncePerRequestFilter {
 
     static final String HEADER = "X-Origin-Key";
+    static final String HEALTH_PATH = "/actuator/health";
 
     private final byte[] expectedKey;
 
@@ -27,7 +28,9 @@ public class OriginKeyFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return expectedKey == null || !request.getRequestURI().startsWith("/api/");
+        // Check every path except the exact health URL. Checking only paths that start with "/api/" could be skipped
+        // with an encoded letter like /%61pi/auth/login, which Spring still decodes and routes to /api/auth/login.
+        return expectedKey == null || HEALTH_PATH.equals(request.getRequestURI());
     }
 
     @Override
