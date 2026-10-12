@@ -6,7 +6,12 @@ Build good habits, earn points, and spend them on rewards you set yourself.
 Log in with `demo@aungpaingtun.dev` / `habitquest-demo` to see an account with two months of history, or register your own.
 The API runs on a Heroku dyno that sleeps when idle, so the first request after a quiet spell can take 10 to 15 seconds.
 
-![CI](https://github.com/AungPaingTun/habitquest/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/AungPaingTun/habitquest/actions/workflows/ci.yml/badge.svg)](https://github.com/AungPaingTun/habitquest/actions/workflows/ci.yml)
+![Java 21](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot 4](https://img.shields.io/badge/Spring_Boot-4-6DB33F?logo=springboot&logoColor=white)
+![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
 
 | Today | Prize shop | Stats |
 |---|---|---|
