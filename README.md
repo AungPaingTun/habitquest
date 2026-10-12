@@ -32,7 +32,7 @@ The full rules, and the reasons behind them, are in the [product requirements](d
 |---|---|
 | **Backend** | Java 21 · Spring Boot 4 · Spring Security (JWT) · Spring Data JPA · Flyway · PostgreSQL 16 |
 | **Frontend** | React · TypeScript · Vite · Tailwind CSS · TanStack Query · Recharts |
-| **Testing** | JUnit 5 · Spring Boot integration tests against a real Postgres (191 tests) |
+| **Testing** | JUnit 5 · Spring Boot integration tests against a real Postgres (210 tests) |
 | **CI** | GitHub Actions: backend tests, frontend lint and build on every push |
 | **Hosting** | Cloudflare Workers (frontend and `/api` proxy) · Heroku (API and Postgres) · domain on Cloudflare DNS |
 
@@ -50,7 +50,9 @@ flowchart LR
 
 1. You log in. `POST /api/auth/login` returns a JWT (a signed token that proves who you are). The React app keeps it in `localStorage`.
 2. Every later call sends it as `Authorization: Bearer <token>`.
-3. The Cloudflare Worker forwards `/api/*` to Heroku. Everything else is the React app.
+3. The Cloudflare Worker forwards `/api/*` to Heroku and adds a secret `X-Origin-Key` header.
+   Heroku rejects any request without it, so nobody can skip Cloudflare's rate limit by calling the Heroku URL directly.
+   Everything else is the React app.
 4. Spring Security checks the token. Then: controller → service (the rules) → repository → PostgreSQL.
 
 The browser only ever talks to one origin, so there is no CORS setup.
@@ -61,11 +63,15 @@ Some design choices worth noting:
 - **Time zones:** "today" is worked out in each user's own time zone, not the server's.
 - **Safe redeeming:** the user row is locked during a redeem, so a double-click can't spend the same points twice.
 - **Locked rules:** a habit's frequency and target lock after the first check-in, and a prize's cost never changes. Streaks and goals can't be gamed by editing them.
+- **Defense in depth:** Cloudflare rate-limits login and signup, Heroku only accepts requests that came through the Worker,
+  and a strict Content-Security-Policy only lets the browser run the app's own scripts. In production the app refuses to
+  start if `JWT_SECRET` or `ORIGIN_KEY` is missing.
 
 ## What I'd build next
 
 - **Public profiles and friends:** optional public profile with level and streaks, following friends, and weekly leaderboards ranked by XP earned that week (not balance, so spending isn't punished).
-- **Hardening for a public launch:** account lockout after repeated failed logins (login rate limiting already runs at Cloudflare).
+- **Hardening for a public launch:** account lockout after repeated failed logins (login and signup are already rate-limited at Cloudflare),
+  and moving the login token from `localStorage` to an HttpOnly cookie.
 - **Reminders:** a daily nudge for habits not yet done.
 
 ## API endpoints
@@ -122,8 +128,10 @@ Locally, all of these have defaults, so you don't need to set any.
 | Name | Used by | Purpose |
 |---|---|---|
 | `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | backend | Database login (on Heroku: `JDBC_DATABASE_*` from the add-on) |
-| `JWT_SECRET` | backend | Signs login tokens. Must be set in production; the app refuses to start on Heroku with the dev default |
-| `JWT_EXPIRATION` | backend | Token lifetime (default `7d`) |
+| `JWT_SECRET` | backend | Signs login tokens. Must be set in production; the app refuses to start there with the dev default |
+| `JWT_EXPIRATION` | backend | Token lifetime (default `7d`; production uses `1d`) |
+| `APP_ENV` | backend | Set to `prod` in production (Heroku's `DYNO` also counts). Turns on the startup safety checks |
+| `ORIGIN_KEY` | backend + Cloudflare Worker (secret) | Shared secret the Worker sends as `X-Origin-Key`. Required in production (32+ characters); empty locally means the check is off |
 | `PORT` | backend | HTTP port (default `8080`) |
 | `DEMO_EMAIL`, `DEMO_PASSWORD` | backend (`demo-seed` profile) | Demo account login |
 | `API_TARGET` | frontend dev server | Backend to proxy `/api` to (default `http://localhost:8080`) |
@@ -151,7 +159,9 @@ heroku run:detached -a habitquest-api -- java -Dspring.profiles.active=demo-seed
 cd frontend && npm run deploy
 ```
 
-On Heroku, the database login comes from the Postgres add-on, and `JWT_SECRET` is set as a config var.
+On Heroku, the database login comes from the Postgres add-on. `JWT_SECRET`, `ORIGIN_KEY`, `APP_ENV` and `JWT_EXPIRATION`
+are config vars. The Worker gets the same `ORIGIN_KEY` with `npx wrangler secret put ORIGIN_KEY`.
+When changing the key, update the Worker first, then Heroku. Requests may fail with 403 for a few seconds in between.
 
 ## Project layout
 
