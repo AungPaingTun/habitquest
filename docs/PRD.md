@@ -4,7 +4,7 @@
 |---|---|
 | **Owner** | Aung Paing Tun |
 | **Status** | v1 MVP: live at https://habitquest.aungpaingtun.dev, feature-complete |
-| **Last updated** | 2026-10-06 |
+| **Last updated** | 2026-10-12 |
 
 ## 1. Problem
 
@@ -102,14 +102,15 @@ Streak bonuses are **flat extra points, not multipliers**. They are easy to unde
 | Dashboard | Today view: balance, level, streaks | ✅ Done |
 | Analytics | Weekly / monthly / yearly: completion rate per habit, points earned vs spent, best streaks, most-redeemed prizes, year heatmap | ✅ Done |
 | Levels | XP → level | ✅ Done |
-| Quality | Tests, CI, deployment to a custom domain | Sprint 4 |
+| Quality | Tests, CI, deployment to a custom domain | ✅ Done |
+| Security | Login + signup rate limit, API only reachable through Cloudflare, Content-Security-Policy, 1-day logins | ✅ Done |
 
 ### v2: public (after the MVP)
 - Profile visibility: **private** (default) or **public**
 - Public profile: display name, avatar, level, XP, streaks, chosen habits
 - Follow friends; weekly leaderboards (by XP earned that week, not balance)
 - Avatar/character cosmetics unlocked by level
-- Login rate limiting and other hardening required before public launch
+- Remaining hardening before public launch: account lockout after repeated failed logins, login token in an HttpOnly cookie instead of `localStorage` (rate limiting is done in v1)
 
 ## 7. Out of scope (for now)
 - Native mobile apps (the web app should work on phones)
@@ -125,7 +126,7 @@ Streak bonuses are **flat extra points, not multipliers**. They are easy to unde
 - The analytics show a trend I didn't notice on my own
 
 ## 9. Decisions log
-Questions that came up while planning, and what was decided (2026-10-01; #6 on 2026-10-02).
+Questions that came up while planning, and what was decided (2026-10-01; #6 on 2026-10-02; #7 on 2026-10-12).
 
 | # | Question | Decision | Why |
 |---|---|---|---|
@@ -135,3 +136,4 @@ Questions that came up while planning, and what was decided (2026-10-01; #6 on 2
 | 4 | Can a prize's cost be edited? | No. It's locked once created; archive the prize and create a new one instead. | A goal shouldn't move during the challenge. |
 | 5 | Can a habit be checked in more than once a day (e.g. 40 pages instead of 20)? | No. One check-in per day for every habit type. | Progress is measured in days of consistency, not in the amount done in one day. |
 | 6 | Can a habit's frequency or target be changed after check-ins exist? | No. They're locked after the first check-in (name, icon, points and dates stay editable). | Otherwise old check-ins get recounted under new rules (e.g. daily → weekly turns 30 days into "met weeks" and pays a bonus at once). Same idea as the locked prize cost: no moving goalposts. |
+| 7 | How long should a login last? | **1 day** (was 7). Logging out only clears the token in the browser. | A stolen token stops working within a day. True server-side logout (a token blocklist) is more work than a personal-use MVP needs. |
