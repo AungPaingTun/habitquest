@@ -47,6 +47,9 @@ import java.util.stream.Collectors;
 @Service
 public class AnalyticsService {
 
+    static final int MIN_HEATMAP_YEAR = 2000;
+    static final int MAX_HEATMAP_YEAR = 2100;
+
     private final UserRepository users;
     private final HabitRepository habits;
     private final HabitLogRepository logs;
@@ -132,6 +135,11 @@ public class AnalyticsService {
 
     @Transactional(readOnly = true)
     public HeatmapResponse heatmap(Long userId, Integer year) {
+        // Without this, a huge year like 2000000000 makes LocalDate.of throw and the API returns 500.
+        if (year != null && (year < MIN_HEATMAP_YEAR || year > MAX_HEATMAP_YEAR)) {
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Year must be between " + MIN_HEATMAP_YEAR + " and " + MAX_HEATMAP_YEAR);
+        }
         User user = findUser(userId);
         LocalDate today = userClock.today(user.getTimezone());
         int y = year != null ? year : today.getYear();

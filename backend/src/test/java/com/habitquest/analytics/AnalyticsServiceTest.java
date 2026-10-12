@@ -591,6 +591,15 @@ class AnalyticsServiceTest {
     }
 
     @Test
+    void heatmap_yearOutOfRange_throwsBadRequest() {
+        for (int year : new int[] {1999, 2101, 2_000_000_000}) {
+            assertThatThrownBy(() -> service.heatmap(USER_ID, year))
+                    .isInstanceOf(ApiException.class)
+                    .satisfies(e -> assertThat(((ApiException) e).getStatus()).isEqualTo(HttpStatus.BAD_REQUEST));
+        }
+    }
+
+    @Test
     void heatmap_unknownUser_throwsUnauthorized() {
         when(users.findById(USER_ID)).thenReturn(Optional.empty());
 
