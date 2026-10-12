@@ -28,6 +28,8 @@ app:
     # HS256 signing key, at least 32 characters. The default is for local dev only; set JWT_SECRET in production.
     secret: ${JWT_SECRET:local-dev-secret-change-me-in-production-0123456789}
     expiration: ${JWT_EXPIRATION:7d}
+  # Shared secret the Cloudflare Worker sends as X-Origin-Key. Empty (local dev) means the check is off.
+  origin-key: ${ORIGIN_KEY:}
 
 management:
   endpoints:

@@ -1,5 +1,6 @@
 package com.habitquest.auth;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.SecretKey;
@@ -25,8 +27,11 @@ import java.nio.charset.StandardCharsets;
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, @Value("${app.origin-key:}") String originKey)
+            throws Exception {
         http
+                // Rejects /api requests that didn't come through the Cloudflare Worker (see OriginKeyFilter).
+                .addFilterBefore(new OriginKeyFilter(originKey), BearerTokenAuthenticationFilter.class)
                 // No cookies/sessions: the client sends "Authorization: Bearer <token>" on every request,
                 // so CSRF protection (which defends cookie-based sessions) isn't needed.
                 .csrf(csrf -> csrf.disable())
