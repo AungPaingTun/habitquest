@@ -33,4 +33,21 @@ class SecurityConfigTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("at least 32 bytes");
     }
+
+    @Test
+    void isProduction_appEnvProd_isTrueOnAnyHost() {
+        assertThat(SecurityConfig.isProduction("prod", null)).isTrue();
+        assertThat(SecurityConfig.isProduction("PROD", null)).isTrue();
+    }
+
+    @Test
+    void isProduction_herokuDyno_isTrue() {
+        assertThat(SecurityConfig.isProduction(null, "web.1")).isTrue();
+    }
+
+    @Test
+    void isProduction_localDev_isFalse() {
+        assertThat(SecurityConfig.isProduction(null, null)).isFalse();
+        assertThat(SecurityConfig.isProduction("dev", null)).isFalse();
+    }
 }

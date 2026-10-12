@@ -61,8 +61,16 @@ public class SecurityConfig {
     }
 
     private static SecretKey signingKey(JwtProperties properties) {
-        // Heroku sets DYNO on every dyno, so its presence means we're running in production.
-        return new SecretKeySpec(checkedSecret(properties.secret(), System.getenv("DYNO") != null), "HmacSHA256");
+        return new SecretKeySpec(checkedSecret(properties.secret(),
+                isProduction(System.getenv("APP_ENV"), System.getenv("DYNO"))), "HmacSHA256");
+    }
+
+    /**
+     * APP_ENV=prod marks production on any host. DYNO (set by Heroku on every dyno) is a fallback,
+     * so the dev-secret guard keeps working even if APP_ENV is forgotten on Heroku.
+     */
+    static boolean isProduction(String appEnv, String dyno) {
+        return "prod".equalsIgnoreCase(appEnv) || dyno != null;
     }
 
     /**
