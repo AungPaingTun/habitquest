@@ -14,9 +14,7 @@
     "API_ORIGIN": "https://habitquest-api-35269eb9ad8d.herokuapp.com"
   },
   "routes": [
-    { "pattern": "habitquest.aungpaingtun.dev", "custom_domain": true },
-    // The root and www stay here until the portfolio site takes them over.
-    { "pattern": "aungpaingtun.dev", "custom_domain": true },
-    { "pattern": "www.aungpaingtun.dev", "custom_domain": true }
+    // The root domain and www belong to the portfolio Worker (repo: AungPaingTun/portfolio).
+    { "pattern": "habitquest.aungpaingtun.dev", "custom_domain": true }
   ]
 }
