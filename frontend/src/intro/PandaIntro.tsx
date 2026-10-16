@@ -36,8 +36,8 @@ type Props = {
  * with its mouth, hops happily, turns and walks away; then the login form fades in.
  * Everything is driven by one clock that follows the video frame on screen, so the falling coin lands on the
  * exact spot of the video's coin. Click, Esc or "Skip intro" ends it at once.
- * It starts silent (browsers block sound until the visitor taps something); "Tap for sound" unmutes the panda's
- * own audio track and adds small logo and coin sounds from then on.
+ * It tries to start with sound (the panda's own audio track plus small logo and coin sounds). Browsers block sound
+ * until the visitor has interacted with the site, so usually it starts muted with a "Tap for sound" button.
  */
 export function PandaIntro({ cardRef, onDone }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -202,7 +202,22 @@ export function PandaIntro({ cardRef, onDone }: Props) {
       window.clearTimeout(budget)
       if (finished) return
       video.playbackRate = SPEED
-      video.play().then(() => { raf = requestAnimationFrame(draw) }, finish)
+      const begin = () => { raf = requestAnimationFrame(draw) }
+      // Try with sound first. Browsers allow it only if the visitor has already interacted with the site (or
+      // allowed sound for it); otherwise they refuse, and the intro plays muted with "Tap for sound".
+      video.muted = false
+      video.play().then(
+        () => {
+          if (finished) return
+          soundsRef.current ??= createIntroSounds()
+          setSoundOn(true)
+          begin()
+        },
+        () => {
+          video.muted = true
+          video.play().then(begin, finish)
+        },
+      )
     }
     if (video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) start()
     else video.addEventListener('canplay', start, { once: true })
