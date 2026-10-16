@@ -29,6 +29,7 @@ export function PandaIntro({ cardRef, onDone }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const logoRef = useRef<HTMLDivElement>(null)
   const coinRef = useRef<HTMLImageElement>(null)
+  const skipRef = useRef<HTMLButtonElement>(null)
   const onDoneRef = useRef(onDone)
   useLayoutEffect(() => {
     onDoneRef.current = onDone
@@ -49,7 +50,7 @@ export function PandaIntro({ cardRef, onDone }: Props) {
 
   useEffect(() => {
     const video = videoRef.current!, logo = logoRef.current!, coin = coinRef.current!, card = cardRef.current
-    let raf = 0, finished = false
+    let raf = 0, finished = false, formShowing = false
 
     const finish = () => {
       if (finished) return
@@ -141,10 +142,17 @@ export function PandaIntro({ cardRef, onDone }: Props) {
         const shown = keyframes(t, [[formStart, 0, ease.outCubic], [formStart + FORM_FADE, 1]])
         card.style.opacity = String(shown)
         card.style.transform = `translateY(${(1 - shown) * 20}px)`
-        if (shown > 0) card.inert = false
+        if (shown > 0 && !formShowing) {
+          // The form is usable from here on; nothing left to skip.
+          formShowing = true
+          card.inert = false
+          if (skipRef.current) skipRef.current.style.visibility = 'hidden'
+        }
       }
 
-      if (t >= formStart + FORM_FADE) finish()
+      // End only once the form is in AND the panda has walked off the screen (on wide screens the form appears
+      // while the panda is still walking out beside it; ending earlier would make the panda vanish mid-step).
+      if (t >= Math.max(formStart + FORM_FADE, VIDEO.length / SPEED)) finish()
       else raf = requestAnimationFrame(draw)
     }
 
@@ -163,9 +171,11 @@ export function PandaIntro({ cardRef, onDone }: Props) {
     else video.addEventListener('canplay', start, { once: true })
     video.addEventListener('error', finish, { once: true })
 
-    // Click anywhere or press Esc to skip.
-    const skipOnKey = (e: KeyboardEvent) => { if (e.key === 'Escape') finish() }
-    window.addEventListener('pointerdown', finish)
+    // Click anywhere or press Esc to skip, until the form shows (then clicks are for the form, and the panda
+    // just finishes walking off).
+    const skip = () => { if (!formShowing) finish() }
+    const skipOnKey = (e: KeyboardEvent) => { if (e.key === 'Escape') skip() }
+    window.addEventListener('pointerdown', skip)
     window.addEventListener('keydown', skipOnKey)
 
     return () => {
@@ -174,7 +184,7 @@ export function PandaIntro({ cardRef, onDone }: Props) {
       window.clearTimeout(budget)
       video.pause()
       window.removeEventListener('resize', layout)
-      window.removeEventListener('pointerdown', finish)
+      window.removeEventListener('pointerdown', skip)
       window.removeEventListener('keydown', skipOnKey)
       video.removeEventListener('canplay', start)
     }
@@ -199,6 +209,7 @@ export function PandaIntro({ cardRef, onDone }: Props) {
         </div>
       </div>
       <button
+        ref={skipRef}
         type="button"
         onClick={() => onDoneRef.current()}
         className="fixed bottom-4 right-4 z-20 rounded-lg px-3 py-1.5 text-sm text-slate-400 hover:text-slate-100 focus-visible:text-slate-100 focus-visible:outline-2 focus-visible:outline-emerald-500"
