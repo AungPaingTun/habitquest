@@ -7,8 +7,12 @@
     "directory": "./dist/",
     // Unknown paths like /stats get index.html, so React Router handles them.
     "not_found_handling": "single-page-application",
+    // Lets the Worker read static files itself (used for the intro videos below).
+    "binding": "ASSETS",
     // /api/* skips the static files and goes to the Worker, which forwards it to Heroku.
-    "run_worker_first": ["/api/*"]
+    // /intro/* (the login intro videos) also goes through the Worker: Safari only plays video from a server that
+    // answers byte-range requests with 206, and Cloudflare's static file serving always sends the whole file.
+    "run_worker_first": ["/api/*", "/intro/*"]
   },
   "vars": {
     "API_ORIGIN": "https://habitquest-api-35269eb9ad8d.herokuapp.com"

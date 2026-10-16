@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { NavLink } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
+import { markOtherScreenShown } from '../intro/firstScreen'
 import { usePointsSummary } from '../points/pointsApi'
 import { Logo } from './Logo'
 import { Points } from './PointsIcon'
@@ -35,6 +36,8 @@ function NavTabs({ className }: { className: string }) {
 export function AppShell({ children }: { children: ReactNode }) {
   const { logout } = useAuth()
   const summary = usePointsSummary()
+  // Logging out lands on the login page; the intro is only for the first screen of a visit.
+  useEffect(markOtherScreenShown, [])
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">

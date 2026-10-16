@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { AuthCard, TextField } from '../components/AuthCard'
+import { isFirstScreen, markOtherScreenShown } from '../intro/firstScreen'
+import { PandaIntro } from '../intro/PandaIntro'
 import { ApiError } from '../lib/api'
 
 export function LoginPage() {
@@ -12,6 +14,14 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+
+  // The panda intro plays only when this is the first screen of a visit, and not for people who asked for less motion.
+  const [showIntro, setShowIntro] = useState(
+    () => isFirstScreen() && !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  )
+  const cardRef = useRef<HTMLDivElement>(null)
+  // Coming back to this page later in the same visit (e.g. from sign-up) shouldn't replay it.
+  useEffect(() => markOtherScreenShown, [])
 
   async function handleSubmit() {
     setError(null)
@@ -36,6 +46,8 @@ export function LoginPage() {
       submitLabel="Log in"
       onSubmit={handleSubmit}
       footer={<>New here? <Link to="/register" className="text-emerald-400 hover:underline">Create an account</Link></>}
+      cardRef={cardRef}
+      overlay={showIntro && <PandaIntro cardRef={cardRef} onDone={() => setShowIntro(false)} />}
     >
       <TextField label="Email" type="email" value={email} onChange={setEmail} autoComplete="email" />
       <TextField label="Password" type="password" value={password} onChange={setPassword} autoComplete="current-password" />

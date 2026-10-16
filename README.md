@@ -28,6 +28,7 @@ The API runs on a Heroku dyno that sleeps when idle, so the first request after 
 - **Points and levels:** spendable balance plus lifetime XP. Spending never lowers your level. Level *n* needs 50 × n² XP.
 - **Prize shop:** create rewards with a fixed cost and redeem them as often as you can afford. Each prize shows how many times you've redeemed it.
 - **Stats:** weekly, monthly and yearly charts, per-habit completion, and a year heatmap.
+- **Login intro:** when the login page is the first screen of a visit, the logo drops a coin and a panda walks in, picks it up and walks off before the form fades in. Skippable (click, Esc or "Skip intro"), and off for people who turn on reduce motion.
 
 The full rules, and the reasons behind them, are in the [product requirements](docs/PRD.md).
 
@@ -176,7 +177,11 @@ backend/src/main/java/com/habitquest/
      └─ one folder per feature: controller → service → repository, plus dto/
 backend/src/main/resources/db/migration/   Flyway SQL migrations
 frontend/src/        pages/, components/, lib/api.ts, plus one folder per feature
-frontend/worker/     Cloudflare Worker that forwards /api (config in wrangler.jsonc)
+frontend/worker/     Cloudflare Worker that forwards /api and serves the intro videos with byte ranges (config in wrangler.jsonc)
 docs/PRD.md          Product rules and decisions log
 docker-compose.yml   local PostgreSQL
 ```
+
+## Credits
+
+The login intro panda was made with AI: the character image with ChatGPT, the animation with Google Veo (via Google Flow). I cut it out of its green screen and extended the walk in and out myself.

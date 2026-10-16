@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { AuthCard, TextField } from '../components/AuthCard'
+import { markOtherScreenShown } from '../intro/firstScreen'
 import { ApiError } from '../lib/api'
 
 export function RegisterPage() {
@@ -13,6 +14,9 @@ export function RegisterPage() {
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
+
+  // Going back to login from here shouldn't replay the login intro.
+  useEffect(markOtherScreenShown, [])
 
   async function handleSubmit() {
     setError(null)

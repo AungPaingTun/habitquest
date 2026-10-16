@@ -1,4 +1,4 @@
-import type { FormEvent, ReactNode } from 'react'
+import type { FormEvent, ReactNode, Ref } from 'react'
 import { Logo } from './Logo'
 
 type AuthCardProps = {
@@ -10,10 +10,13 @@ type AuthCardProps = {
   onSubmit: () => void
   footer: ReactNode
   children: ReactNode
+  /** Optional layer shown over the page (the login intro), and a ref to the card so it can fade the card in. */
+  overlay?: ReactNode
+  cardRef?: Ref<HTMLDivElement>
 }
 
 /** Shared layout for the login and sign-up forms. */
-export function AuthCard({ title, subtitle, error, submitting, submitLabel, onSubmit, footer, children }: AuthCardProps) {
+export function AuthCard({ title, subtitle, error, submitting, submitLabel, onSubmit, footer, children, overlay, cardRef }: AuthCardProps) {
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     onSubmit()
@@ -21,7 +24,7 @@ export function AuthCard({ title, subtitle, error, submitting, submitLabel, onSu
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+      <div ref={cardRef} className="relative z-10 w-full max-w-sm">
         <div className="text-center mb-8">
           <Logo className="text-xl" markClassName="size-9" />
           <h1 className="text-3xl font-bold mt-2">{title}</h1>
@@ -48,6 +51,8 @@ export function AuthCard({ title, subtitle, error, submitting, submitLabel, onSu
 
         <p className="text-center text-sm text-slate-400 mt-6">{footer}</p>
       </div>
+      {/* After the card on purpose: React attaches cardRef first, so the overlay can hide the card before it's painted. */}
+      {overlay}
     </main>
   )
 }
