@@ -5,13 +5,14 @@ import {
   COIN_DROP, COIN_LAND, COIN_REST, FORM_FADE, LOGO_IN, RIGHT_EDGE, SPEED, VIDEO,
   bump, clamp01, ease, keyframes,
 } from './introTimeline'
+import { INTRO_DEBUG, introLog as log } from './introDebug'
 import { createIntroSounds, type IntroSounds } from './introSounds'
 
 // Safari can't show WebM with transparency, so it gets an HEVC .mov (with premultiplied colour) instead.
 const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent)
 const VIDEO_URL = isSafari ? '/intro/panda-v2.mov' : '/intro/panda-v2.webm'
-// If the video can't start this fast (slow network), skip the intro rather than keep the form hidden.
-const LOAD_BUDGET_MS = 2500
+// If the video hasn't started playing this fast (slow network), skip the intro rather than keep the form hidden.
+const LOAD_BUDGET_MS = 3000
 
 // Logo and coin sounds, in page seconds (they match the motion in draw()).
 const SOUND_EVENTS: [number, (s: IntroSounds) => void][] = [
@@ -82,8 +83,11 @@ export function PandaIntro({ cardRef, onDone }: Props) {
     const video = videoRef.current!, logo = logoRef.current!, coin = coinRef.current!, card = cardRef.current
     let raf = 0, finished = false, formShowing = false, lastT = 0
 
-    const finish = () => {
+    log(`${isSafari ? 'Safari' : 'other browser'} → ${VIDEO_URL}`)
+
+    const finish = (reason = 'done') => {
       if (finished) return
+      log(`intro ended: ${reason}`)
       finished = true
       cancelAnimationFrame(raf)
       video.pause()
@@ -189,48 +193,60 @@ export function PandaIntro({ cardRef, onDone }: Props) {
 
       // End only once the form is in AND the panda has walked off the screen (on wide screens the form appears
       // while the panda is still walking out beside it; ending earlier would make the panda vanish mid-step).
-      if (t >= Math.max(formStart + FORM_FADE, VIDEO.length / SPEED)) finish()
+      if (t >= Math.max(formStart + FORM_FADE, VIDEO.length / SPEED)) finish('finished normally')
       else raf = requestAnimationFrame(draw)
     }
 
-    // ---- Start as soon as the video can play (it keeps loading while it plays); skip the intro if it's slow to
-    // start or the browser blocks autoplay (for example iPhone Low Power Mode).
+    // ---- Press play right away: iPhones don't download a video until it's asked to play (waiting for "ready"
+    // first never finishes there). The scene starts drawing once the video is really playing. Skip the intro if
+    // that takes too long or the browser refuses autoplay (for example iPhone Low Power Mode).
     layout()
     window.addEventListener('resize', layout)
-    const budget = window.setTimeout(finish, LOAD_BUDGET_MS)
-    const start = () => {
+    const budget = window.setTimeout(() => finish(`video didn't start within ${LOAD_BUDGET_MS / 1000}s`), LOAD_BUDGET_MS)
+    const begin = () => {
       window.clearTimeout(budget)
       if (finished) return
-      video.playbackRate = SPEED
-      const begin = () => { raf = requestAnimationFrame(draw) }
-      // Try with sound first. Browsers allow it only if the visitor has already interacted with the site (or
-      // allowed sound for it); otherwise they refuse, and the intro plays muted with "Tap for sound".
-      video.muted = false
-      video.play().then(
-        () => {
-          if (finished) return
-          soundsRef.current ??= createIntroSounds()
-          setSoundOn(true)
-          begin()
-        },
-        () => {
-          video.muted = true
-          video.play().then(begin, finish)
-        },
-      )
+      video.playbackRate = SPEED // iPhones can reset the speed while loading
+      raf = requestAnimationFrame(draw)
     }
-    if (video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) start()
-    else video.addEventListener('canplay', start, { once: true })
-    video.addEventListener('error', finish, { once: true })
+    video.defaultPlaybackRate = SPEED
+    video.playbackRate = SPEED
+    // Try with sound first. Browsers allow it only if the visitor has already interacted with the site (or
+    // allowed sound for it); otherwise they refuse, and the intro plays muted with "Tap for sound".
+    video.muted = false
+    video.play().then(
+      () => {
+        if (finished) return
+        log('playing with sound')
+        soundsRef.current ??= createIntroSounds()
+        setSoundOn(true)
+        begin()
+      },
+      (soundError: Error) => {
+        log(`sound refused (${soundError.name}), playing muted`)
+        video.muted = true
+        video.play().then(
+          () => { log('playing muted'); begin() },
+          (error: Error) => finish(`autoplay refused (${error.name}); Low Power Mode?`),
+        )
+      },
+    )
+    const onError = () => finish(`video error ${video.error?.code ?? ''} ${video.error?.message ?? ''}`)
+    video.addEventListener('error', onError, { once: true })
+    if (INTRO_DEBUG) {
+      for (const name of ['loadedmetadata', 'canplay', 'playing', 'waiting', 'stalled', 'ended']) {
+        video.addEventListener(name, () => log(`${name} (video at ${video.currentTime.toFixed(2)}s, rate ${video.playbackRate})`))
+      }
+    }
 
     // Click anywhere or press Esc to skip, until the form shows (then clicks are for the form, and the panda
     // just finishes walking off).
     const skip = (e: Event) => {
       // Taps on the intro's own buttons (sound, skip) aren't "click anywhere to skip".
       if (e.target instanceof Element && e.target.closest('[data-intro-controls]')) return
-      if (!formShowing) finish()
+      if (!formShowing) finish('skipped by a tap')
     }
-    const skipOnKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !formShowing) finish() }
+    const skipOnKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !formShowing) finish('skipped with Esc') }
     window.addEventListener('pointerdown', skip)
     window.addEventListener('keydown', skipOnKey)
 
@@ -242,7 +258,7 @@ export function PandaIntro({ cardRef, onDone }: Props) {
       window.removeEventListener('resize', layout)
       window.removeEventListener('pointerdown', skip)
       window.removeEventListener('keydown', skipOnKey)
-      video.removeEventListener('canplay', start)
+      video.removeEventListener('error', onError)
     }
   }, [cardRef])
 
@@ -278,6 +294,7 @@ export function PandaIntro({ cardRef, onDone }: Props) {
           Skip intro
         </button>
       </div>
+
     </>
   )
 }
