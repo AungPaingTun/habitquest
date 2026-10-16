@@ -1,16 +1,28 @@
-import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react'
 import { LogoMark } from '../components/Logo'
 import coinUrl from './coin.png'
 import {
   COIN_DROP, COIN_LAND, COIN_REST, FORM_FADE, LOGO_IN, RIGHT_EDGE, SPEED, VIDEO,
   bump, clamp01, ease, keyframes,
 } from './introTimeline'
+import { createIntroSounds, type IntroSounds } from './introSounds'
 
 // Safari can't show WebM with transparency, so it gets an HEVC .mov (with premultiplied colour) instead.
 const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent)
-const VIDEO_URL = isSafari ? '/intro/panda-v1.mov' : '/intro/panda-v1.webm'
+const VIDEO_URL = isSafari ? '/intro/panda-v2.mov' : '/intro/panda-v2.webm'
 // If the video can't start this fast (slow network), skip the intro rather than keep the form hidden.
 const LOAD_BUDGET_MS = 2500
+
+// Logo and coin sounds, in page seconds (they match the motion in draw()).
+const SOUND_EVENTS: [number, (s: IntroSounds) => void][] = [
+  [0.02, (s) => s.whoosh()], // logo drops in
+  [LOGO_IN, (s) => s.land(1)],
+  [LOGO_IN + 0.3, (s) => s.land(0.35)], // small second bounce
+  [COIN_DROP, (s) => { s.land(0.5); s.pop() }], // the hop that throws the coin out
+  [COIN_LAND, (s) => s.ting(1)],
+  [COIN_LAND + 0.38, (s) => s.ting(0.55)],
+  [COIN_REST, (s) => s.ting(0.3)],
+]
 
 type Props = {
   /** The login form; hidden during the intro, then faded in once the panda is out of its way. */
@@ -24,12 +36,16 @@ type Props = {
  * with its mouth, hops happily, turns and walks away; then the login form fades in.
  * Everything is driven by one clock that follows the video frame on screen, so the falling coin lands on the
  * exact spot of the video's coin. Click, Esc or "Skip intro" ends it at once.
+ * It starts silent (browsers block sound until the visitor taps something); "Tap for sound" unmutes the panda's
+ * own audio track and adds small logo and coin sounds from then on.
  */
 export function PandaIntro({ cardRef, onDone }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const logoRef = useRef<HTMLDivElement>(null)
   const coinRef = useRef<HTMLImageElement>(null)
   const skipRef = useRef<HTMLButtonElement>(null)
+  const soundsRef = useRef<IntroSounds | null>(null)
+  const [soundOn, setSoundOn] = useState(false)
   const onDoneRef = useRef(onDone)
   useLayoutEffect(() => {
     onDoneRef.current = onDone
@@ -48,9 +64,23 @@ export function PandaIntro({ cardRef, onDone }: Props) {
     }
   }, [cardRef])
 
+  // Must run inside the tap itself: that's what lets the browser play sound.
+  function toggleSound() {
+    const video = videoRef.current
+    if (!video) return
+    if (!soundOn) {
+      soundsRef.current ??= createIntroSounds()
+      video.muted = false
+    } else {
+      video.muted = true
+    }
+    setSoundOn(!soundOn)
+  }
+  useEffect(() => () => soundsRef.current?.close(), [])
+
   useEffect(() => {
     const video = videoRef.current!, logo = logoRef.current!, coin = coinRef.current!, card = cardRef.current
-    let raf = 0, finished = false, formShowing = false
+    let raf = 0, finished = false, formShowing = false, lastT = 0
 
     const finish = () => {
       if (finished) return
@@ -101,6 +131,13 @@ export function PandaIntro({ cardRef, onDone }: Props) {
     // ---- One frame of the scene.
     const draw = (now: number) => {
       const t = pageTime(now)
+
+      // Sounds fire as the clock passes their moment (only once the visitor has turned sound on).
+      const sounds = soundsRef.current
+      if (sounds && !video.muted) {
+        for (const [at, play] of SOUND_EVENTS) if (lastT < at && t >= at) play(sounds)
+      }
+      lastT = t
 
       // Logo: drops in and settles, a little hop "throws" the coin, later floats up and fades.
       const away = formStart - 0.5
@@ -173,8 +210,12 @@ export function PandaIntro({ cardRef, onDone }: Props) {
 
     // Click anywhere or press Esc to skip, until the form shows (then clicks are for the form, and the panda
     // just finishes walking off).
-    const skip = () => { if (!formShowing) finish() }
-    const skipOnKey = (e: KeyboardEvent) => { if (e.key === 'Escape') skip() }
+    const skip = (e: Event) => {
+      // Taps on the intro's own buttons (sound, skip) aren't "click anywhere to skip".
+      if (e.target instanceof Element && e.target.closest('[data-intro-controls]')) return
+      if (!formShowing) finish()
+    }
+    const skipOnKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && !formShowing) finish() }
     window.addEventListener('pointerdown', skip)
     window.addEventListener('keydown', skipOnKey)
 
@@ -208,14 +249,34 @@ export function PandaIntro({ cardRef, onDone }: Props) {
           <LogoMark className="size-24" />
         </div>
       </div>
-      <button
-        ref={skipRef}
-        type="button"
-        onClick={() => onDoneRef.current()}
-        className="fixed bottom-4 right-4 z-20 rounded-lg px-3 py-1.5 text-sm text-slate-400 hover:text-slate-100 focus-visible:text-slate-100 focus-visible:outline-2 focus-visible:outline-emerald-500"
-      >
-        Skip intro
-      </button>
+      <div data-intro-controls className="fixed bottom-4 right-4 z-20 flex items-center gap-1">
+        <button
+          type="button"
+          onClick={toggleSound}
+          aria-pressed={soundOn}
+          className={buttonClass}
+        >
+          <SpeakerIcon on={soundOn} />
+          {soundOn ? 'Sound on' : 'Tap for sound'}
+        </button>
+        <button ref={skipRef} type="button" onClick={() => onDoneRef.current()} className={buttonClass}>
+          Skip intro
+        </button>
+      </div>
     </>
+  )
+}
+
+const buttonClass = 'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-slate-400 hover:text-slate-100 '
+  + 'focus-visible:text-slate-100 focus-visible:outline-2 focus-visible:outline-emerald-500'
+
+function SpeakerIcon({ on }: { on: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className="size-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z" fill="currentColor" />
+      {on
+        ? <path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" />
+        : <path d="M16 9.5l5 5M21 9.5l-5 5" />}
+    </svg>
   )
 }
