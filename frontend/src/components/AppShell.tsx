@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { NavLink } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
 import { usePointsSummary } from '../points/pointsApi'
+import { Logo } from './Logo'
 import { Points } from './PointsIcon'
 
 const NAV = [
@@ -40,7 +41,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <header className="border-b border-slate-800 sticky top-0 bg-slate-950/90 backdrop-blur z-10">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
           <div className="flex items-center gap-4 min-w-0">
-            <span className="text-emerald-400 font-semibold">HabitQuest</span>
+            <Logo className="text-lg" />
             <NavTabs className="hidden sm:flex gap-1" />
           </div>
 

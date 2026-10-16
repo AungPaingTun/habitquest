@@ -1,4 +1,5 @@
 import type { FormEvent, ReactNode } from 'react'
+import { Logo } from './Logo'
 
 type AuthCardProps = {
   title: string
@@ -22,7 +23,7 @@ export function AuthCard({ title, subtitle, error, submitting, submitLabel, onSu
     <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <p className="text-emerald-400 font-semibold tracking-wide">HabitQuest</p>
+          <Logo className="text-xl" markClassName="size-9" />
           <h1 className="text-3xl font-bold mt-2">{title}</h1>
           <p className="text-slate-400 mt-2">{subtitle}</p>
         </div>
