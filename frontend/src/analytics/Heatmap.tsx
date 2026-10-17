@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { parseDay, toIso, type Heatmap as HeatmapData } from './analyticsApi'
 import { heatColor, useViz } from './vizTheme'
 
@@ -10,8 +10,9 @@ const DAY_LABELS = ['Mon', '', 'Wed', '', 'Fri', '', '']
 export function Heatmap({ data }: { data: HeatmapData }) {
   const viz = useViz()
   const [hover, setHover] = useState<{ date: string; count: number; x: number; y: number } | null>(null)
+  const scroller = useRef<HTMLDivElement>(null)
 
-  const { weeks, monthLabels, activeDays } = useMemo(() => {
+  const { weeks, monthLabels, activeDays, todayCol } = useMemo(() => {
     const counts = new Map(data.days.map((d) => [d.date, d.count]))
     const jan1 = new Date(data.year, 0, 1)
     // Start on the Monday on or before Jan 1 so every column is a full Mon–Sun week.
@@ -20,6 +21,7 @@ export function Heatmap({ data }: { data: HeatmapData }) {
 
     const weeks: { date: string; count: number; inYear: boolean; future: boolean }[][] = []
     const monthLabels: { col: number; label: string }[] = []
+    let todayCol = -1
     const cursor = new Date(first)
     while (cursor.getFullYear() <= data.year) {
       const week = []
@@ -29,14 +31,26 @@ export function Heatmap({ data }: { data: HeatmapData }) {
         if (inYear && cursor.getDate() === 1) {
           monthLabels.push({ col: weeks.length, label: cursor.toLocaleDateString(undefined, { month: 'short' }) })
         }
+        if (iso === data.today) todayCol = weeks.length
         week.push({ date: iso, count: counts.get(iso) ?? 0, inYear, future: iso > data.today })
         cursor.setDate(cursor.getDate() + 1)
       }
       weeks.push(week)
       if (cursor.getFullYear() > data.year) break
     }
-    return { weeks, monthLabels, activeDays: data.days.length }
+    // A past year has no "today" column: show its end (December) instead.
+    if (todayCol < 0) todayCol = weeks.length - 1
+    return { weeks, monthLabels, activeDays: data.days.length, todayCol }
   }, [data])
+
+  // On a phone the year is wider than the screen. Start scrolled so the latest weeks (where the recent check-ins are)
+  // are in view, instead of January. Wide screens show the whole year, so nothing moves there.
+  useLayoutEffect(() => {
+    const el = scroller.current
+    if (!el) return
+    const todayRight = 30 + (todayCol + 1) * (CELL + GAP)
+    el.scrollLeft = Math.max(0, todayRight + 2 * (CELL + GAP) - el.clientWidth)
+  }, [todayCol])
 
   const width = weeks.length * (CELL + GAP)
   const height = 7 * (CELL + GAP)
@@ -52,7 +66,7 @@ export function Heatmap({ data }: { data: HeatmapData }) {
         </p>
       </div>
 
-      <div className="overflow-x-auto relative" onMouseLeave={() => setHover(null)}>
+      <div ref={scroller} className="overflow-x-auto relative" onMouseLeave={() => setHover(null)}>
         <svg
           width={width + 30}
           height={height + 18}
