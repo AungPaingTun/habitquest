@@ -28,6 +28,7 @@ The API runs on a Heroku dyno that sleeps when idle, so the first request after 
 - **Points and levels:** spendable balance plus lifetime XP. Spending never lowers your level. Level *n* needs 50 × n² XP.
 - **Prize shop:** create rewards with a fixed cost and redeem them as often as you can afford. Each prize shows how many times you've redeemed it.
 - **Stats:** weekly, monthly and yearly charts, per-habit completion, and a year heatmap.
+- **Light and dark mode:** a sun/moon button in the header and on the login page. It follows your device setting until you pick one, remembers your choice, and keeps other open tabs in sync.
 - **Login intro:** when the login page is the first screen of a visit, the logo drops a coin and a panda walks in, picks it up and walks off before the form fades in. Silent at first (browsers block sound until you tap), with a "Tap for sound" button for the panda's sounds plus logo and coin effects. Skippable (click, Esc or "Skip intro"), and off for people who turn on reduce motion.
 
 The full rules, and the reasons behind them, are in the [product requirements](docs/PRD.md).
@@ -69,9 +70,25 @@ Some design choices worth noting:
 - **Time zones:** "today" is worked out in each user's own time zone, not the server's.
 - **Safe redeeming:** the user row is locked during a redeem, so a double-click can't spend the same points twice.
 - **Locked rules:** a habit's frequency and target lock after the first check-in, and a prize's cost never changes. Streaks and goals can't be gamed by editing them.
+- **Light mode without touching every component:** the app was built dark-first, so light mode flips Tailwind's slate color
+  scale in one CSS block instead of changing hundreds of classes. A tiny script sets the theme before the page draws,
+  so it never flashes the wrong colors. Charts get their own checked light and dark palettes.
 - **Defense in depth:** Cloudflare rate-limits login and signup, Heroku only accepts requests that came through the Worker,
   and a strict Content-Security-Policy only lets the browser run the app's own scripts. In production the app refuses to
   start if `JWT_SECRET` or `ORIGIN_KEY` is missing.
+
+## What I learned
+
+- **Keep the rules in the service layer.** Controllers only handle HTTP and repositories only talk to the database.
+  Streaks, bonuses, levels and locking all live in services, which made them easy to test.
+- **Store events, not totals.** A points ledger (one row per change) is simpler to trust than a balance column that
+  every feature has to update correctly.
+- **Test against the real database.** The integration tests run on PostgreSQL in Docker, not an in-memory fake, so
+  things like row locks, unique constraints and Flyway migrations are tested for real.
+- **Dates are harder than they look.** "Today" depends on the user's time zone, and weekly or monthly streaks need
+  their own period rules.
+- **Deploying is part of the work.** Splitting the app across Cloudflare and Heroku taught me about proxies, secrets,
+  security headers, rate limits, and why a sleeping dyno makes the first request slow.
 
 ## What I'd build next
 
