@@ -43,7 +43,7 @@ export function PrizesPage() {
           <h1 className="text-2xl font-bold">Prize shop</h1>
           <p className="text-slate-400 text-sm">You have <Points value={balance} className="text-amber-300 font-semibold" /> to spend</p>
         </div>
-        <button onClick={() => setDialog({ mode: 'create' })} className="rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-semibold px-4 py-2">
+        <button onClick={() => setDialog({ mode: 'create' })} className="rounded-lg bg-amber-400 hover:bg-amber-300 text-on-accent font-semibold px-4 py-2">
           + Add prize
         </button>
       </div>
@@ -144,7 +144,7 @@ function PrizeCard({ prize, balance, onRedeem, onEdit, onToggleArchive }: CardPr
           <button
             onClick={onRedeem}
             disabled={!affordable}
-            className="mt-3 w-full rounded-lg py-2 font-semibold bg-amber-400 hover:bg-amber-300 text-slate-950 disabled:bg-slate-800 disabled:text-slate-400"
+            className="mt-3 w-full rounded-lg py-2 font-semibold bg-amber-400 hover:bg-amber-300 text-on-accent disabled:bg-slate-800 disabled:text-slate-400"
           >
             {affordable ? 'Redeem' : `Need ${prize.cost - balance} more`}
           </button>

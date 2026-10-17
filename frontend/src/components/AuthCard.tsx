@@ -1,5 +1,6 @@
 import type { FormEvent, ReactNode, Ref } from 'react'
 import { Logo } from './Logo'
+import { ThemeToggle } from './ThemeToggle'
 
 type AuthCardProps = {
   title: string
@@ -24,6 +25,10 @@ export function AuthCard({ title, subtitle, error, submitting, submitLabel, onSu
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-4">
+      {/* data-intro-controls: tapping it during the login intro switches the theme instead of skipping the intro. */}
+      <div data-intro-controls className="fixed top-2 right-2 z-20">
+        <ThemeToggle />
+      </div>
       <div ref={cardRef} className="relative z-10 w-full max-w-sm">
         <div className="text-center mb-8">
           <Logo className="text-xl" markClassName="size-9" />
@@ -43,7 +48,7 @@ export function AuthCard({ title, subtitle, error, submitting, submitLabel, onSu
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-slate-950 font-semibold py-2.5 transition-colors"
+            className="w-full rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-on-accent font-semibold py-2.5 transition-colors"
           >
             {submitting ? 'Please wait…' : submitLabel}
           </button>

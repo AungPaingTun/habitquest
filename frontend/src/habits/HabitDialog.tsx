@@ -183,7 +183,7 @@ export function HabitDialog({ habit, onClose }: Props) {
           <button
             type="submit"
             disabled={saving}
-            className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-slate-950 font-semibold"
+            className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-60 text-on-accent font-semibold"
           >
             {saving ? 'Saving…' : habit ? 'Save changes' : 'Add habit'}
           </button>
@@ -204,7 +204,7 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 }
 
 function inputClass(error?: string, width = 'mt-1 w-full') {
-  return `${width} rounded-lg bg-slate-950 border px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500 [color-scheme:dark] ${
+  return `${width} rounded-lg bg-slate-950 border px-3 py-2 outline-none focus:ring-2 focus:ring-emerald-500 ${
     error ? 'border-red-500' : 'border-slate-700'
   }`
 }

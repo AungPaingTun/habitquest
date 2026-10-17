@@ -1,8 +1,57 @@
 @import "tailwindcss";
 
-/* The whole app is dark: make native scrollbars, date pickers and form controls dark too. */
+/* Dark text that stays dark in both themes, for buttons and badges on green or gold. */
+@theme {
+  --color-on-accent: #020617;
+}
+
+/* Dark is the default: make native scrollbars, date pickers and form controls dark too. */
 :root {
   color-scheme: dark;
   /* A touch lighter than Tailwind's slate-500 (#64748b, 3.7:1 on the dark cards) so small labels read at 5:1. */
   --color-slate-500: #7c8aa0;
+}
+
+/*
+ * Light theme (<html data-theme="light">, set by public/theme-init.js and the toggle button).
+ * The components were written for dark, so instead of changing every class, the slate scale is flipped here:
+ * slate-950 (page) becomes a light gray, slate-900 (cards) white, slate-100 (main text) near black, and so on.
+ * So in light mode a class like bg-slate-950 is light; read slate classes as "page / card / border / text" levels.
+ */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-slate-50: #020617;
+  --color-slate-100: #0f172a;
+  --color-slate-200: #1e293b;
+  --color-slate-300: #334155;
+  --color-slate-400: #475569;
+  --color-slate-500: #64748b;
+  --color-slate-600: #94a3b8;
+  --color-slate-700: #cbd5e1;
+  --color-slate-800: #e2e8f0;
+  --color-slate-900: #ffffff;
+  --color-slate-950: #f1f5f9;
+
+  /* Accent text: the light 300/400 shades are made for dark backgrounds; use the 700 shades so text stays readable
+     (4.5:1 or more on white). Only the text classes change, so green and gold buttons keep their colors. */
+  .text-emerald-300, .text-emerald-400 { color: #047857; }
+  .text-amber-300 { color: #92400e; } /* amber-800: 700 was just under 4.5:1 on the gold chip in the gray header */
+  .text-red-300 { color: #b91c1c; }
+  .text-violet-300 { color: #6d28d9; }
+
+  /* Focus rings and the selected icon's border: the bright 400/500 shades are too faint on white (under 3:1).
+     Set on the element itself; they only show while focused or selected. */
+  .focus\:ring-emerald-500 { --tw-ring-color: #047857; }
+  .focus\:ring-amber-400 { --tw-ring-color: #b45309; }
+  .focus\:ring-slate-500 { --tw-ring-color: #475569; }
+  .focus-visible\:outline-emerald-500 { outline-color: #047857; }
+  .border-emerald-400 { border-color: #059669; }
+  .border-amber-400 { border-color: #d97706; }
+
+  /* Level progress bar: violet-400 is too faint on the light track. */
+  .bg-violet-400 { background-color: #7c3aed; }
+
+  /* Error boxes: pale red instead of dark red. */
+  .bg-red-950\/50 { background-color: #fef2f2; }
+  .border-red-900 { border-color: #fecaca; }
 }

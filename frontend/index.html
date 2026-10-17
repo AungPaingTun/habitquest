@@ -4,7 +4,11 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Phone address-bar color; theme-init.js and theme.ts keep it in step with light/dark. -->
+    <meta name="theme-color" content="#020617" />
     <title>HabitQuest</title>
+    <!-- Sets light/dark before the page draws (a file, not inline, because of the Content-Security-Policy). -->
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>

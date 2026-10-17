@@ -98,7 +98,7 @@ export function PrizeDialog({ prize, onClose }: Props) {
 
         <div className="flex justify-end gap-3 pt-2">
           <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-slate-300 hover:bg-slate-800">Cancel</button>
-          <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 disabled:opacity-60 text-slate-950 font-semibold">
+          <button type="submit" disabled={saving} className="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 disabled:opacity-60 text-on-accent font-semibold">
             {saving ? 'Saving…' : prize ? 'Save changes' : 'Add prize'}
           </button>
         </div>

@@ -1,8 +1,8 @@
 import type { ToastMessage } from './useToast'
 
 const TONES = {
-  success: 'bg-emerald-500 text-slate-950',
-  celebrate: 'bg-amber-400 text-slate-950',
+  success: 'bg-emerald-500 text-on-accent',
+  celebrate: 'bg-amber-400 text-on-accent',
   error: 'bg-red-700 text-white', // 6.5:1; red-500 was only 3.8:1
 }
 

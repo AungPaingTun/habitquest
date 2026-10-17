@@ -6,6 +6,8 @@ export type StreakTier = {
   name: string
   flame: string
   core: string
+  /** darker outline, drawn in light mode so the bright flames stand out on white (≥3:1) */
+  edge: string
   /** the top tiers (30+ days) get a soft glow, so long streaks stand out */
   glow: boolean
 }
@@ -13,11 +15,11 @@ export type StreakTier = {
 // Flame colors heat up as the streak grows, like TikTok's streak flame.
 // The 7- and 30-day tiers line up with the +2 and +4 streak bonus tiers (PRD §5.4).
 const TIERS = {
-  spark: { name: 'Spark', flame: '#f97316', core: '#fed7aa' }, // orange
-  hot: { name: 'Hot', flame: '#ef4444', core: '#fecaca' }, // red, +2 bonus
-  blazing: { name: 'Blazing', flame: '#d946ef', core: '#f5d0fe' }, // magenta, +4 bonus
-  legendary: { name: 'Legendary', flame: '#3b82f6', core: '#bfdbfe' }, // blue fire
-  mythic: { name: 'Mythic', flame: '#facc15', core: '#fef9c3' }, // gold
+  spark: { name: 'Spark', flame: '#f97316', core: '#fed7aa', edge: '#c2410c' }, // orange
+  hot: { name: 'Hot', flame: '#ef4444', core: '#fecaca', edge: '#b91c1c' }, // red, +2 bonus
+  blazing: { name: 'Blazing', flame: '#d946ef', core: '#f5d0fe', edge: '#a21caf' }, // magenta, +4 bonus
+  legendary: { name: 'Legendary', flame: '#3b82f6', core: '#bfdbfe', edge: '#1d4ed8' }, // blue fire
+  mythic: { name: 'Mythic', flame: '#facc15', core: '#fef9c3', edge: '#a16207' }, // gold
 } as const
 
 // Thresholds per frequency: [visible from, hot, blazing, legendary, mythic].

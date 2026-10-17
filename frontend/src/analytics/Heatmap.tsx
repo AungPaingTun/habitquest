@@ -1,13 +1,14 @@
 import { useMemo, useState } from 'react'
 import { parseDay, toIso, type Heatmap as HeatmapData } from './analyticsApi'
-import { heatColor, viz } from './vizTheme'
+import { heatColor, useViz } from './vizTheme'
 
 const CELL = 10
 const GAP = 2
 const DAY_LABELS = ['Mon', '', 'Wed', '', 'Fri', '', '']
 
-/** GitHub-style year grid: one column per week (Mon–Sun), one cell per day, darker blue = fewer check-ins. */
+/** GitHub-style year grid: one column per week (Mon–Sun), one cell per day, bluer = more check-ins. */
 export function Heatmap({ data }: { data: HeatmapData }) {
+  const viz = useViz()
   const [hover, setHover] = useState<{ date: string; count: number; x: number; y: number } | null>(null)
 
   const { weeks, monthLabels, activeDays } = useMemo(() => {
@@ -51,7 +52,7 @@ export function Heatmap({ data }: { data: HeatmapData }) {
         </p>
       </div>
 
-      <div className="overflow-x-auto relative [color-scheme:dark]" onMouseLeave={() => setHover(null)}>
+      <div className="overflow-x-auto relative" onMouseLeave={() => setHover(null)}>
         <svg
           width={width + 30}
           height={height + 18}
@@ -75,7 +76,7 @@ export function Heatmap({ data }: { data: HeatmapData }) {
                     width={CELL}
                     height={CELL}
                     rx={2}
-                    fill={heatColor(day.count, data.maxCount)}
+                    fill={heatColor(viz, day.count, data.maxCount)}
                     onMouseEnter={() => setHover({ ...day, x: 30 + col * (CELL + GAP), y: 16 + row * (CELL + GAP) })}
                   >
                     <title>{`${day.count} check-in${day.count === 1 ? '' : 's'} · ${formatDay(day.date)}`}</title>

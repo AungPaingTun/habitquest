@@ -153,7 +153,7 @@ function HabitRow({ habit, busy, onCheckIn, onUndo }: RowProps) {
         aria-label={habit.doneToday ? `${habit.name} done today` : `Check in ${habit.name}`}
         className={`size-11 shrink-0 rounded-full border-2 grid place-items-center text-lg font-bold transition-colors ${
           habit.doneToday || targetMet
-            ? 'bg-emerald-500 border-emerald-500 text-slate-950'
+            ? 'bg-emerald-500 border-emerald-500 text-on-accent'
             : 'border-slate-600 hover:border-emerald-400 hover:bg-emerald-500/10 disabled:opacity-50'
         }`}
       >

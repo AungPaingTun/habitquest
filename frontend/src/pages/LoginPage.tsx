@@ -56,7 +56,7 @@ export function LoginPage() {
       overlay={showIntro
         ? <PandaIntro cardRef={cardRef} onDone={() => setShowIntro(false)} />
         : INTRO_DEBUG && (
-          <pre className="fixed left-2 top-2 z-30 max-w-[90vw] whitespace-pre-wrap rounded bg-black/80 p-2 text-[11px] text-amber-300">
+          <pre className="fixed left-2 top-2 z-30 max-w-[90vw] whitespace-pre-wrap rounded bg-black/80 p-2 text-[11px] text-yellow-300">
             {introLogText() || 'intro: nothing logged'}
           </pre>
         )}

@@ -10,7 +10,7 @@ import { pointsKey, type Transaction } from '../points/pointsApi'
 import { Heatmap } from './Heatmap'
 import { PointsChart } from './PointsChart'
 import { parseDay, periodLabel, shiftPeriod, useAnalytics, useHeatmap, type Analytics, type HabitStats, type Period } from './analyticsApi'
-import { viz } from './vizTheme'
+import { useViz } from './vizTheme'
 
 const PERIODS: { value: Period; label: string }[] = [
   { value: 'WEEK', label: 'Week' },
@@ -118,6 +118,7 @@ function StatTiles({ a }: { a: Analytics }) {
 }
 
 function HabitCompletion({ habits, isCurrent }: { habits: HabitStats[]; isCurrent: boolean }) {
+  const viz = useViz()
   return (
     <section className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
       <h2 className="font-semibold">Habit completion</h2>
@@ -159,7 +160,7 @@ function HabitCompletion({ habits, isCurrent }: { habits: HabitStats[]; isCurren
                 <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
                   {tier.visible ? (
                     <>
-                      <StreakFlame flame={tier.flame} core={tier.core} glow={tier.glow} />
+                      <StreakFlame flame={tier.flame} core={tier.core} edge={tier.edge} glow={tier.glow} />
                       <span className="text-slate-200 font-semibold">{h.currentStreak}</span> {streakUnit(h.frequency, h.currentStreak)} · {tier.name}
                     </>
                   ) : (

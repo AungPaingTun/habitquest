@@ -1,17 +1,18 @@
 import { useState } from 'react'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { bucketLabel, bucketTitle, type Bucket, type Period } from './analyticsApi'
-import { niceTicks, viz } from './vizTheme'
+import { niceTicks, useViz } from './vizTheme'
 
 type Props = { period: Period; series: Bucket[] }
 
 const SERIES = [
-  { key: 'earned', label: 'Earned', color: viz.earned },
-  { key: 'spent', label: 'Spent', color: viz.spent },
+  { key: 'earned', label: 'Earned' },
+  { key: 'spent', label: 'Spent' },
 ] as const
 
 /** Points earned vs spent per day (week/month) or per month (year). One axis: both are points. */
 export function PointsChart({ period, series }: Props) {
+  const viz = useViz()
   const [showTable, setShowTable] = useState(false)
   const data = series.map((b) => ({ ...b, label: bucketLabel(period, b.key) }))
   const ticks = niceTicks(Math.max(0, ...series.map((b) => Math.max(b.earned, b.spent))))
@@ -25,7 +26,7 @@ export function PointsChart({ period, series }: Props) {
           <ul className="flex gap-4 text-slate-300" aria-label="Legend">
             {SERIES.map((s) => (
               <li key={s.key} className="flex items-center gap-1.5">
-                <span className="size-2.5 rounded-sm" style={{ background: s.color }} aria-hidden />
+                <span className="size-2.5 rounded-sm" style={{ background: viz[s.key] }} aria-hidden />
                 {s.label}
               </li>
             ))}
@@ -74,7 +75,7 @@ export function PointsChart({ period, series }: Props) {
               <YAxis ticks={ticks} domain={[0, ticks[ticks.length - 1]]} allowDecimals={false} tickLine={false} axisLine={false} tick={{ fill: viz.muted, fontSize: 12 }} width={44} />
               <Tooltip cursor={{ fill: 'rgba(148,163,184,0.08)' }} content={<PointsTooltip period={period} />} />
               {SERIES.map((s) => (
-                <Bar key={s.key} dataKey={s.key} name={s.label} fill={s.color} maxBarSize={24} radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                <Bar key={s.key} dataKey={s.key} name={s.label} fill={viz[s.key]} maxBarSize={24} radius={[4, 4, 0, 0]} isAnimationActive={false} />
               ))}
             </BarChart>
           </ResponsiveContainer>
@@ -92,6 +93,7 @@ type TooltipProps = {
 
 /** Values lead, labels follow; series keyed with a short line, not a box. */
 function PointsTooltip({ period, active, payload }: TooltipProps) {
+  const viz = useViz()
   if (!active || !payload?.length) return null
   const bucket = payload[0].payload
   return (
@@ -99,7 +101,7 @@ function PointsTooltip({ period, active, payload }: TooltipProps) {
       <p className="text-slate-400 mb-1">{bucketTitle(period, bucket.key)}</p>
       {SERIES.map((s) => (
         <p key={s.key} className="flex items-center gap-2">
-          <span className="w-3 h-0.5 rounded" style={{ background: s.color }} aria-hidden />
+          <span className="w-3 h-0.5 rounded" style={{ background: viz[s.key] }} aria-hidden />
           <span className="font-semibold text-slate-100">{bucket[s.key]}</span>
           <span className="text-slate-400">{s.label.toLowerCase()}</span>
         </p>

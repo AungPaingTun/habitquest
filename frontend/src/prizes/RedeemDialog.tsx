@@ -37,7 +37,7 @@ export function RedeemDialog({ prize, balance, redeeming, onConfirm, onClose }: 
           onClick={onConfirm}
           disabled={redeeming}
           autoFocus
-          className="flex-1 px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 disabled:opacity-60 text-slate-950 font-semibold"
+          className="flex-1 px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 disabled:opacity-60 text-on-accent font-semibold"
         >
           {redeeming ? 'Redeeming…' : 'Redeem'}
         </button>

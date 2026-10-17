@@ -17,7 +17,7 @@ export function HabitsPage() {
         <h1 className="text-2xl font-bold">Your habits</h1>
         <button
           onClick={() => setDialog({ mode: 'create' })}
-          className="rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold px-4 py-2"
+          className="rounded-lg bg-emerald-500 hover:bg-emerald-400 text-on-accent font-semibold px-4 py-2"
         >
           + Add habit
         </button>
