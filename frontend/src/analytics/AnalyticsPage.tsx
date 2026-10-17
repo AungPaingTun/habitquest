@@ -86,7 +86,7 @@ export function AnalyticsPage() {
           <PointsChart period={a.period} series={a.series} />
           <HabitCompletion habits={a.habits} isCurrent={isCurrent} />
           {heatmap.data && <Heatmap data={heatmap.data} />}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <TopPrizes prizes={a.topPrizes} />
             <RecentActivity />
           </div>

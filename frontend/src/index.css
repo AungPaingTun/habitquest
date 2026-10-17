@@ -3,4 +3,6 @@
 /* The whole app is dark: make native scrollbars, date pickers and form controls dark too. */
 :root {
   color-scheme: dark;
+  /* A touch lighter than Tailwind's slate-500 (#64748b, 3.7:1 on the dark cards) so small labels read at 5:1. */
+  --color-slate-500: #7c8aa0;
 }

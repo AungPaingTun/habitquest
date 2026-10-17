@@ -3,7 +3,7 @@ import type { ToastMessage } from './useToast'
 const TONES = {
   success: 'bg-emerald-500 text-slate-950',
   celebrate: 'bg-amber-400 text-slate-950',
-  error: 'bg-red-500 text-white',
+  error: 'bg-red-700 text-white', // 6.5:1; red-500 was only 3.8:1
 }
 
 export function Toast({ toast }: { toast: ToastMessage | null }) {
