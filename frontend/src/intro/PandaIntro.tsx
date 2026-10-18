@@ -81,7 +81,7 @@ export function PandaIntro({ cardRef, onDone }: Props) {
 
   useEffect(() => {
     const video = videoRef.current!, logo = logoRef.current!, coin = coinRef.current!, card = cardRef.current
-    let raf = 0, finished = false, formShowing = false, lastT = 0
+    let raf = 0, finished = false, formShowing = false, lastT = 0, maxT = 0
 
     log(`${isSafari ? 'Safari' : 'other browser'} → ${VIDEO_URL}`)
 
@@ -134,7 +134,10 @@ export function PandaIntro({ cardRef, onDone }: Props) {
 
     // ---- One frame of the scene.
     const draw = (now: number) => {
-      const t = pageTime(now)
+      // The clock only ever moves forward. Safari's .mov can report its time jumping back (a re-seek on the
+      // byte-range stream), which would otherwise rewind the scene and replay the logo drop.
+      maxT = Math.max(maxT, pageTime(now))
+      const t = maxT
 
       // Sounds fire as the clock passes their moment (only once the visitor has turned sound on).
       const sounds = soundsRef.current
