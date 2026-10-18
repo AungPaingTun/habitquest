@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 're
 import { LogoMark } from '../components/Logo'
 import coinUrl from './coin.png'
 import {
-  COIN_DROP, COIN_LAND, COIN_REST, FORM_FADE, LOGO_IN, RIGHT_EDGE, SPEED, VIDEO,
+  COIN_DROP, COIN_LAND, COIN_REST, LOGO_IN, SPEED, VIDEO,
   bump, clamp01, ease, keyframes,
 } from './introTimeline'
 import { INTRO_DEBUG, introLog as log } from './introDebug'
@@ -58,10 +58,15 @@ export function PandaIntro({ cardRef, onDone }: Props) {
     if (!card) return
     card.style.opacity = '0'
     card.inert = true
+    // The form slides in from off the right edge; clip the page so that never adds a horizontal scrollbar.
+    const root = document.documentElement
+    const prevOverflowX = root.style.overflowX
+    root.style.overflowX = 'hidden'
     return () => {
       card.style.opacity = ''
       card.style.transform = ''
       card.inert = false
+      root.style.overflowX = prevOverflowX
     }
   }, [cardRef])
 
@@ -95,21 +100,22 @@ export function PandaIntro({ cardRef, onDone }: Props) {
     }
 
     // ---- Layout (page pixels). The video's floor sits on the page's "ground" line at 82% height.
-    let W = 0, H = 0, G = 0, k = 1, formStart = 99
+    let W = 0, H = 0, G = 0, k = 1, formStart = 99, slideFrom = 0
     const layout = () => {
       W = window.innerWidth
       H = window.innerHeight
       G = H * 0.82
-      k = Math.max(0.45, Math.min(0.68, W / 1750)) // video scale: smaller on phones
+      // Video scale: smaller on phones. The video sits at the left edge (translate x 0), so the panda walks in
+      // from the screen edge, picks the coin up part-way across, then walks back out to the edge.
+      k = Math.max(0.45, Math.min(0.72, W / 1750))
       video.style.width = `${VIDEO.width * k}px`
       video.style.transform = `translate(0px, ${G - VIDEO.ground * k}px)`
       coin.style.width = `${VIDEO.coin.width * k}px`
-      // The form fades in from the first frame (after the turn) where the panda is left of it.
-      const cardLeft = card ? card.getBoundingClientRect().left : 0
-      formStart = VIDEO.length / SPEED + 0.05
-      for (let i = Math.round(VIDEO.turned * 24); i < RIGHT_EDGE.length; i++) {
-        if (RIGHT_EDGE[i] * k < cardLeft - 10) { formStart = i / 24 / SPEED; break }
-      }
+      // How far off the right edge the login form starts before it slides in to its centred spot.
+      slideFrom = W / 2 + (card ? card.offsetWidth : 360) / 2 + 24
+      // The form starts sliding in just after the panda turns and finishes as it walks off screen, so the panda
+      // appears to pull the form in behind it.
+      formStart = VIDEO.turned / SPEED + 0.1
     }
 
     // ---- Clock. requestVideoFrameCallback tells us exactly which frame is on screen and when (video.currentTime
@@ -181,11 +187,14 @@ export function PandaIntro({ cardRef, onDone }: Props) {
       coin.style.transform = `translate(${cx - cw / 2}px, ${cy - ch / 2}px) rotate(${wobble}deg) `
         + `scale(${grow * (1 + hit)}, ${grow * (1 - 1.6 * hit)})`
 
-      // Form: fades and rises in once the panda is out of its way.
+      // Form: slides in from off the right edge and settles at centre, following the panda as it walks out left.
+      // It travels over the whole walk-out (turn → off screen), so the panda seems to pull it in.
       if (card) {
-        const shown = keyframes(t, [[formStart, 0, ease.outCubic], [formStart + FORM_FADE, 1]])
-        card.style.opacity = String(shown)
-        card.style.transform = `translateY(${(1 - shown) * 20}px)`
+        const slideEnd = VIDEO.length / SPEED
+        const shown = keyframes(t, [[formStart, 0, ease.inOut], [slideEnd, 1]])
+        // Opacity fades in over the first half of the slide, so the card is faintly visible as it travels.
+        card.style.opacity = String(clamp01((t - formStart) / ((slideEnd - formStart) * 0.5)))
+        card.style.transform = `translateX(${(1 - shown) * slideFrom}px)`
         if (shown > 0 && !formShowing) {
           // The form is usable from here on; nothing left to skip.
           formShowing = true
@@ -196,7 +205,7 @@ export function PandaIntro({ cardRef, onDone }: Props) {
 
       // End only once the form is in AND the panda has walked off the screen (on wide screens the form appears
       // while the panda is still walking out beside it; ending earlier would make the panda vanish mid-step).
-      if (t >= Math.max(formStart + FORM_FADE, VIDEO.length / SPEED)) finish('finished normally')
+      if (t >= VIDEO.length / SPEED) finish('finished normally')
       else raf = requestAnimationFrame(draw)
     }
 
