@@ -208,9 +208,14 @@ export function PandaIntro({ cardRef, onDone }: Props) {
         }
       }
 
+      // Fade the panda out over the last moment of its walk-off, so no sliver of it shows past the form's edge
+      // (on phones the form reaches the left edge, where the panda exits) as the form settles.
+      const end = VIDEO.length / SPEED
+      video.style.opacity = String(clamp01((end - t) / 0.4))
+
       // End only once the form is in AND the panda has walked off the screen (on wide screens the form appears
       // while the panda is still walking out beside it; ending earlier would make the panda vanish mid-step).
-      if (t >= VIDEO.length / SPEED) finish('finished normally')
+      if (t >= end) finish('finished normally')
       else raf = requestAnimationFrame(draw)
     }
 
