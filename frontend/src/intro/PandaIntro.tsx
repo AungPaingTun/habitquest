@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 're
 import { LogoMark } from '../components/Logo'
 import coinUrl from './coin.png'
 import {
-  COIN_DROP, COIN_LAND, COIN_REST, LOGO_IN, RIGHT_EDGE, SPEED, VIDEO,
+  COIN_DROP, COIN_LAND, COIN_REST, LOGO_IN, SPEED, VIDEO,
   bump, clamp01, ease, keyframes,
 } from './introTimeline'
 import { INTRO_DEBUG, introLog as log } from './introDebug'
@@ -118,16 +118,10 @@ export function PandaIntro({ cardRef, onDone }: Props) {
       coin.style.width = `${VIDEO.coin.width * k}px`
       // How far off the right edge the login form starts before it slides in to its centred spot.
       slideFrom = W / 2 + (card ? card.offsetWidth : 360) / 2 + 24
-      // The form only starts coming in once the panda has walked past the card's left edge, so they never overlap.
-      // Wide screens: the card is off to the right, so that's soon after the turn and the form slides in over the
-      // walk-out ("pulled" behind the panda). Phones: the card is full width, so the panda leaves first, then the
-      // form slides in on a clear screen.
-      const cardLeft = card ? card.getBoundingClientRect().left : 0
-      formStart = VIDEO.length / SPEED + 0.05
-      for (let i = Math.round(VIDEO.turned * 24); i < RIGHT_EDGE.length; i++) {
-        if (RIGHT_EDGE[i] * k < cardLeft - 10) { formStart = i / 24 / SPEED; break }
-      }
-      // Always give the slide at least this long, even when it starts late (phones), so it never just pops in.
+      // The form starts sliding in just after the panda turns and travels over the whole walk-out, so the panda
+      // appears to pull it in. The panda is behind the form (z-index) and fades out at the edge, so on phones —
+      // where the full-width form reaches the panda's exit — nothing of it shows past the form.
+      formStart = VIDEO.turned / SPEED + 0.1
       slideEnd = Math.max(VIDEO.length / SPEED, formStart + 0.9)
     }
 
@@ -215,8 +209,10 @@ export function PandaIntro({ cardRef, onDone }: Props) {
         }
       }
 
-      // Fade the panda out over the last moment of its walk-off, as it reaches the screen edge.
-      video.style.opacity = String(clamp01((VIDEO.length / SPEED - t) / 0.4))
+      // Fade the panda out over the last stretch of its walk-off, reaching fully invisible a moment BEFORE the
+      // form settles, so on phones (where the full-width form reaches the panda's exit) nothing of it is left
+      // once the form is centred.
+      video.style.opacity = String(clamp01((VIDEO.length / SPEED - 0.3 - t) / 1.1))
 
       // End once the form has finished sliding in (which is at or after the panda has walked off screen).
       if (t >= slideEnd) finish('finished normally')
