@@ -1,4 +1,10 @@
 import { useSyncExternalStore } from 'react'
+import { flushSync } from 'react-dom'
+
+// Browsers that support View Transitions expose this; older ones don't, so it stays optional.
+type ViewTransitionDocument = Document & {
+  startViewTransition?: (callback: () => void) => { ready: Promise<void> }
+}
 
 // Light or dark colors. public/theme-init.js picks the starting theme before the page draws (saved choice, else the
 // device setting, else dark) and stamps it on <html data-theme="...">; index.css swaps the colors from there.
@@ -20,14 +26,39 @@ function apply(theme: Theme) {
   listeners.forEach((listener) => listener())
 }
 
-/** Switches the theme and remembers the choice in this browser. */
-export function setTheme(theme: Theme) {
+/**
+ * Switches the theme and remembers the choice in this browser.
+ * With `origin` (the toggle button's center), the new colors are revealed in a circle growing from that point.
+ * Browsers without View Transitions, or visitors who prefer reduced motion, get an instant switch.
+ */
+export function setTheme(theme: Theme, origin?: { x: number; y: number }) {
   try {
     localStorage.setItem(STORAGE_KEY, theme)
   } catch {
     // Private mode or blocked storage: the switch still works for this visit.
   }
-  apply(theme)
+
+  const doc = document as ViewTransitionDocument
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (!doc.startViewTransition || reduceMotion || !origin) {
+    apply(theme)
+    return
+  }
+
+  // flushSync so the icon swap and chart colors are part of the snapshot the browser animates.
+  const transition = doc.startViewTransition(() => flushSync(() => apply(theme)))
+  transition.ready
+    .then(() => {
+      const { x, y } = origin
+      const endRadius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))
+      document.documentElement.animate(
+        { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`] },
+        { duration: 350, easing: 'ease-in-out', pseudoElement: '::view-transition-new(root)' },
+      )
+    })
+    .catch(() => {
+      // The colors have already switched; only the reveal animation was skipped.
+    })
 }
 
 // Until the visitor picks a theme here, follow the device when it switches (e.g. automatic dark mode at night).

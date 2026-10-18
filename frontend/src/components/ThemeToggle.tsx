@@ -9,7 +9,10 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
   return (
     <button
       type="button"
-      onClick={() => setTheme(next)}
+      onClick={(e) => {
+        const r = e.currentTarget.getBoundingClientRect()
+        setTheme(next, { x: r.left + r.width / 2, y: r.top + r.height / 2 })
+      }}
       aria-label={label}
       title={label}
       className={`grid place-items-center size-11 shrink-0 rounded-full text-slate-400 hover:text-slate-100 hover:bg-slate-800 `

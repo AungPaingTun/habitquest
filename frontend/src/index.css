@@ -13,6 +13,19 @@
 }
 
 /*
+ * Theme switch animation: the toggle reveals the new colors in a circle (setTheme in theme.ts drives the clip-path).
+ * Turn off the browser's default cross-fade so only the circle shows; the new theme sits on top of the old one.
+ * Browsers without View Transitions, and visitors who prefer reduced motion, switch instantly with no animation.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) { z-index: 0; }
+::view-transition-new(root) { z-index: 1; }
+
+/*
  * Light theme (<html data-theme="light">, set by public/theme-init.js and the toggle button).
  * The components were written for dark, so instead of changing every class, the slate scale is flipped here:
  * slate-950 (page) becomes a light gray, slate-900 (cards) white, slate-100 (main text) near black, and so on.
