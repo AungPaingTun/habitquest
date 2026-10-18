@@ -119,10 +119,10 @@ export function PandaIntro({ cardRef, onDone }: Props) {
       // How far off the right edge the login form starts before it slides in to its centred spot.
       slideFrom = W / 2 + (card ? card.offsetWidth : 360) / 2 + 24
       // The form starts sliding in just after the panda turns and travels over the whole walk-out, so the panda
-      // appears to pull it in. The panda is behind the form (z-index) and fades out at the edge, so on phones —
-      // where the full-width form reaches the panda's exit — nothing of it shows past the form.
+      // appears to pull it in. The slide runs 10% slower than the walk-out, so it finishes just after the panda
+      // has left the screen.
       formStart = VIDEO.turned / SPEED + 0.1
-      slideEnd = Math.max(VIDEO.length / SPEED, formStart + 0.9)
+      slideEnd = formStart + Math.max(0.9, VIDEO.length / SPEED - formStart) * 1.1
     }
 
     // ---- Clock. requestVideoFrameCallback tells us exactly which frame is on screen and when (video.currentTime
@@ -209,12 +209,7 @@ export function PandaIntro({ cardRef, onDone }: Props) {
         }
       }
 
-      // Fade the panda out over the last stretch of its walk-off, reaching fully invisible a moment BEFORE the
-      // form settles, so on phones (where the full-width form reaches the panda's exit) nothing of it is left
-      // once the form is centred.
-      video.style.opacity = String(clamp01((VIDEO.length / SPEED - 0.3 - t) / 1.1))
-
-      // End once the form has finished sliding in (which is at or after the panda has walked off screen).
+      // End once the form has finished sliding in (which is just after the panda has walked off screen).
       if (t >= slideEnd) finish('finished normally')
       else raf = requestAnimationFrame(draw)
     }
