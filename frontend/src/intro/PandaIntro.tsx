@@ -58,6 +58,10 @@ export function PandaIntro({ cardRef, onDone }: Props) {
     if (!card) return
     card.style.opacity = '0'
     card.inert = true
+    // Lift the form above the panda video so, on narrow screens where the centred form reaches the left edge,
+    // the panda walks out behind it instead of its tail showing over the form's border.
+    const prevZ = card.style.zIndex
+    card.style.zIndex = '20'
     // The form slides in from off the right edge; clip the page so that never adds a horizontal scrollbar.
     const root = document.documentElement
     const prevOverflowX = root.style.overflowX
@@ -65,6 +69,7 @@ export function PandaIntro({ cardRef, onDone }: Props) {
     return () => {
       card.style.opacity = ''
       card.style.transform = ''
+      card.style.zIndex = prevZ
       card.inert = false
       root.style.overflowX = prevOverflowX
     }
