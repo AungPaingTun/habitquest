@@ -39,7 +39,7 @@ The full rules, and the reasons behind them, are in the [product requirements](d
 |---|---|
 | **Backend** | Java 21 · Spring Boot 4 · Spring Security (JWT) · Spring Data JPA · Flyway · PostgreSQL 16 |
 | **Frontend** | React · TypeScript · Vite · Tailwind CSS · TanStack Query · Recharts |
-| **Testing** | JUnit 5 · Spring Boot integration tests against a real Postgres (210 tests) |
+| **Testing** | JUnit 5 · Mockito · Spring integration tests against real PostgreSQL (incl. a concurrent-redeem test that proves the row lock) · 210+ tests in CI |
 | **CI** | GitHub Actions: backend tests, frontend lint and build on every push |
 | **Hosting** | Cloudflare Workers (frontend and `/api` proxy) · Heroku (API and Postgres) · domain on Cloudflare DNS |
 
@@ -83,8 +83,10 @@ Some design choices worth noting:
   Streaks, bonuses, levels and locking all live in services, which made them easy to test.
 - **Store events, not totals.** A points ledger (one row per change) is simpler to trust than a balance column that
   every feature has to update correctly.
-- **Test against the real database.** The integration tests run on PostgreSQL in Docker, not an in-memory fake, so
-  things like row locks, unique constraints and Flyway migrations are tested for real.
+- **Test the parts only a real database can prove.** Most logic is unit-tested (streaks, levels, points), with
+  Mockito for the service layer. The database-dependent behaviour — a pessimistic row lock that stops a
+  double-spend (a test fires two redeems at once and checks only one goes through), unique constraints and Flyway
+  migrations — is covered by Spring integration tests against real PostgreSQL, not an in-memory fake.
 - **Dates are harder than they look.** "Today" depends on the user's time zone, and weekly or monthly streaks need
   their own period rules.
 - **Deploying is part of the work.** Splitting the app across Cloudflare and Heroku taught me about proxies, secrets,
